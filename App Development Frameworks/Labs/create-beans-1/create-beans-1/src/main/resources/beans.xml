@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans  xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+             http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+             http://www.springframework.org/schema/context
+             http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+    <context:component-scan base-package="ie.szymon"/>
+
+    <bean id="messageSource"
+          class="org.springframework.context.support.ResourceBundleMessageSource">
+        <property name="basenames">
+            <list>
+                <value>messages</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="disney" class="ie.szymon.entities.Studio">
+        <constructor-arg value="Walt Disney"/>
+        <constructor-arg value="1923"/>
+    </bean>
+    <bean id="paramount" class="ie.szymon.entities.Studio">
+        <property name="name" value="Paramount"/>
+        <property name="yearFounded" value="1911"/>
+    </bean>
+
+    <bean id="sciinfo" class="ie.szymon.entities.School" autowire="byType">
+        <property name="school" value="Science and Informatics"/>
+        <property name="email" value="brendan.oconnell@mtu.ie"/>
+    </bean>
+    <bean id="business" class="ie.szymon.entities.School" autowire="byType">
+        <property name="school" value="Business"/>
+        <property name="email" value="business@mtu.ie"/>
+    </bean>
+    <bean id="humanities" class="ie.szymon.entities.School" autowire="byType">
+        <property name="school" value="Humanities"/>
+        <property name="email" value="margaret.linehan@mtu.ie"/>
+    </bean>
+
+    <bean id="popeye" class="ie.szymon.entities.CartoonCharacter">
+        <constructor-arg value="Popeye the Sailor Man"/>
+        <constructor-arg value="1933"/>
+        <constructor-arg value="true"/>
+        <constructor-arg value="true"/>
+        <constructor-arg ref="paramount"/>
+    </bean>
+
+    <bean id="cs" class="ie.szymon.entities.Department">
+        <constructor-arg value="Computer Science"/>
+        <constructor-arg value="computerscienceCork@mtu.ie"/>
+        <constructor-arg ref="sciinfo"/>
+    </bean>
+    <bean id="maths" class="ie.szymon.entities.Department">
+        <constructor-arg value="Mathematics"/>
+        <constructor-arg value="mathematicscork@mtu.ie"/>
+        <constructor-arg ref="sciinfo"/>
+    </bean>
+    <bean id="keyboard" class="ie.szymon.entities.Department">
+        <constructor-arg value="Keyboard Studies"/>
+        <constructor-arg value="gabriela.mayer@mtu.ie"/>
+        <constructor-arg ref="humanities"/>
+    </bean>
+    <bean id="string" class="ie.szymon.entities.Department">
+        <constructor-arg value="String Studies"/>
+        <constructor-arg value="joan.scannell@mtu.ie"/>
+        <constructor-arg ref="humanities"/>
+    </bean>
+    <bean id="accinfo" class="ie.szymon.entities.Department">
+        <constructor-arg value="Accounting and Information Systems"/>
+        <constructor-arg value="claire.osullivanreochford@mtu.ie"/>
+        <constructor-arg ref="business"/>
+    </bean>
+    <bean id="manage" class="ie.szymon.entities.Department">
+        <constructor-arg value="Managements and Enterprise"/>
+        <constructor-arg value="caroline.oreilly@mtu.ie"/>
+        <constructor-arg ref="business"/>
+    </bean>
+</beans>
