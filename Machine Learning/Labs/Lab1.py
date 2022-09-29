@@ -24,7 +24,7 @@ print(fiblist[number - 1])
 Task 2
 '''
 
-text = "C:/Users/szymo/Documents/College/Machine Learning/Week 2/Dracula.txt"
+text = "C:/Users/szymo/Documents/College/Machine Learning/LabFiles/Dracula.txt"
 wordlist = {}
 
 
@@ -48,7 +48,7 @@ print(readText(5, 300))
 Test 3
 '''
 
-text = "C:/Users/szymo/Documents/College/Machine Learning/Week 2/Day.csv"
+text = "C:/Users/szymo/Documents/College/Machine Learning/LabFiles/Day.csv"
 cols = ["weathersit", "cnt"]
 
 

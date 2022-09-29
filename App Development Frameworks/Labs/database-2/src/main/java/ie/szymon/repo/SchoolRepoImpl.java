@@ -1,9 +1,10 @@
 package ie.szymon.repo;
 
 import ie.szymon.entities.School;
+import ie.szymon.rowmappers.SchoolRowMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
@@ -13,13 +14,11 @@ import java.util.List;
 public class SchoolRepoImpl implements SchoolRepo {
 
     @Autowired
-    private JdbcTemplate namedParameterJdbcTemplate;
+    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Override
     public int count() {
-        String sql = "select count(*) from school";
-        Integer number = namedParameterJdbcTemplate.queryForObject(sql, Integer.class);
-        return number != null? number: -1;
+        return 0;
     }
 
     @Override
@@ -37,7 +36,7 @@ public class SchoolRepoImpl implements SchoolRepo {
     public boolean exists(int id) {
         String sql = "select count(*) from school where school_id = :schoolId";
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource().addValue("schoolId", id);
-        Integer number = namedParameterJdbcTemplate.queryForObject(sql, sqlParameterSource.getParameterNames(), Integer.class);
+        Integer number = namedParameterJdbcTemplate.queryForObject(sql, sqlParameterSource, Integer.class);
         return number != null && number == 1;
     }
 
@@ -45,7 +44,7 @@ public class SchoolRepoImpl implements SchoolRepo {
     public boolean existsByName(String name) {
         String sql = "select count(*) from school where name = :name";
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource().addValue("name", name);
-        Integer number = namedParameterJdbcTemplate.queryForObject(sql, sqlParameterSource.getParameterNames(), Integer.class);
+        Integer number = namedParameterJdbcTemplate.queryForObject(sql, sqlParameterSource, Integer.class);
         return number != null && number == 1;
     }
 

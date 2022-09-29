@@ -1,4 +1,4 @@
-package ie.szymon.repo;
+package ie.szymon.rowmappers;
 
 import ie.szymon.entities.School;
 import org.springframework.jdbc.core.RowMapper;
