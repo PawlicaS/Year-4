@@ -30,7 +30,7 @@ public class SchoolRepoImpl implements SchoolRepo {
 
     @Override
     public School findById(int id) {
-        String sql = "select school where school_id = :schoolId";
+        String sql = "select * from school where school_id = :schoolId";
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource().addValue("schoolId", id);
         return namedParameterJdbcTemplate.queryForObject(sql, sqlParameterSource, new SchoolRowMapper());
     }

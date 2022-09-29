@@ -9,6 +9,6 @@ public class MainApp {
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");
         SchoolService schoolService = context.getBean(SchoolServiceImpl.class);
         schoolService.findAll().forEach(System.out::println);
-        schoolService.findASchool(1);
+        System.out.println(schoolService.findASchool(1));
     }
 }
