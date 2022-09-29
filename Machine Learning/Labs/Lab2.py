@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn import svm
 
 '''
 Task 1
@@ -42,8 +43,6 @@ def readCSV():
     # plt.show()
 
 
-readCSV()
-
 '''
 Task 2
 '''
@@ -69,12 +68,9 @@ def readTitanic():
           f'Died Fare - {df.loc[df["Survived"] == 0]["Fare"].mean()}\n')
 
 
-readTitanic()
-
 '''
 Task 3
 '''
-
 
 def generate():
     no_of_clusters = 3
@@ -93,8 +89,29 @@ def generate():
 
     plt.figure()
     plt.scatter(data[:, 0], data[:, 1], c=target)
-    plt.plot()
+    decision_boundaries(data, target)
+
+
+def decision_boundaries(data, target):
+    clf = svm.SVC()
+    clf.fit(data, target)
+    x_min = min(data[:, 0])
+    x_max = max(data[:, 0])
+    y_min = min(data[:, 1])
+    y_max = max(data[:, 1])
+    granularity = 0.01
+    x, y = np.meshgrid(np.arange(x_min, x_max, granularity), np.arange(y_min,
+                                                                       y_max, granularity))
+    xy = np.array([x.flatten(), y.flatten()]).transpose()
+    prediction = clf.predict(xy)
+    prediction = prediction.reshape(x.shape)
+    plt.figure()
+    plt.imshow(prediction, extent=(x_min, x_max, y_min, y_max), alpha=0.4,
+               origin="lower")
+    plt.scatter(data[:, 0], data[:, 1], c=target)
     plt.show()
 
 
+# readCSV()
+# readTitanic()
 generate()
