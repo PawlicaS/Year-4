@@ -18,7 +18,8 @@ public class SchoolRepoImpl implements SchoolRepo {
 
     @Override
     public int count() {
-        return 0;
+        String sql = "count(*)";
+        return namedParameterJdbcTemplate.query(sql, new SchoolRowMapper()).size();
     }
 
     @Override
@@ -29,7 +30,9 @@ public class SchoolRepoImpl implements SchoolRepo {
 
     @Override
     public School findById(int id) {
-        return null;
+        String sql = "select school where school_id = :schoolId";
+        SqlParameterSource sqlParameterSource = new MapSqlParameterSource().addValue("schoolId", id);
+        return namedParameterJdbcTemplate.queryForObject(sql, sqlParameterSource, new SchoolRowMapper());
     }
 
     @Override
