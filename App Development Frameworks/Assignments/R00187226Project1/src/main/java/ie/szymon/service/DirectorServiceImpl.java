@@ -25,10 +25,10 @@ public class DirectorServiceImpl implements DirectorService {
             log.error("Could not add director because a director with id " + newDirector.getDirectorId() + " already exists");
             return false;
         }
-        if (directorRepo.existsByName(newDirector.getFirstName(), newDirector.getLastName())) {
-            log.error("Could not add director because a director called " + newDirector.getFirstName() + " " + newDirector.getLastName() + " already exists");
-            return false;
-        }
+//        if (directorRepo.existsByName(newDirector.getFirstName(), newDirector.getLastName())) {
+//            log.error("Could not add director because a director called " + newDirector.getFirstName() + " " + newDirector.getLastName() + " already exists");
+//            return false;
+//        }
         return directorRepo.createDirector(newDirector) == 1;
     }
 
@@ -41,7 +41,7 @@ public class DirectorServiceImpl implements DirectorService {
     }
 
     @Override
-    public boolean changeActive(int directorId, boolean newActive) {
+    public boolean changeActive(int directorId, int newActive) {
         if (! directorRepo.exists(directorId)) {
             log.error("Could not change active because a director with id " + directorId + " does not exist");
             return false;

@@ -32,8 +32,10 @@ public class DirectorRepoImpl implements DirectorRepo {
 
     @Override
     public boolean existsByName(String firstName, String lastName) {
-        String sql = "select count(*) from director where first_name+last_name = :fullName+:lastName";
-        SqlParameterSource sqlParameterSource = new MapSqlParameterSource().addValue("first_name", firstName).addValue("last_name", lastName);
+        String sql = "select count(*) from director where first_name+last_name = :firstName+:lastName";
+        SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
+                .addValue("first_name", firstName)
+                .addValue("last_name", lastName);
         Integer number = namedParameterJdbcTemplate.queryForObject(sql, sqlParameterSource, Integer.class);
         return number != null && number == 1;
     }
@@ -45,7 +47,7 @@ public class DirectorRepoImpl implements DirectorRepo {
                 .addValue("directorId", newDirector.getDirectorId())
                 .addValue("firstName", newDirector.getFirstName())
                 .addValue("lastName", newDirector.getLastName())
-                .addValue("active", newDirector.isActive());
+                .addValue("active", newDirector.getActive());
         return namedParameterJdbcTemplate.update(sql, sqlParameterSource);
     }
 
@@ -57,7 +59,7 @@ public class DirectorRepoImpl implements DirectorRepo {
     }
 
     @Override
-    public int changeActive(int directorId, boolean newActive) {
+    public int changeActive(int directorId, int newActive) {
         String sql = "update director set active = :newActive where director_id = :directorId";
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
                 .addValue("director_id", directorId)

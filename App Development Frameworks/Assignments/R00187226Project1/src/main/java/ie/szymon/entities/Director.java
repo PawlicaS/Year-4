@@ -11,5 +11,5 @@ public class Director {
     private int directorId;
     private String firstName;
     private String lastName;
-    private boolean active;
+    private Integer active;
 }

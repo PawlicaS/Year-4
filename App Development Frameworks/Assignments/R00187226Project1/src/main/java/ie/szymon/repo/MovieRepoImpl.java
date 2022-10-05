@@ -73,7 +73,7 @@ public class MovieRepoImpl implements MovieRepo {
 
     @Override
     public MovieAndDirector findMovieAndDirector(int movieId) {
-        String sql = "select d.first_name, d.last_name, m from movie m inner join school d on d.director_id = m.director_id where m.movie_id = :movieId";
+        String sql = "select d.first_name, d.last_name, m.title, m.release_year, m.takings from movie m inner join director d on d.director_id = m.director_id where m.movie_id = :movieId";
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource().addValue("movieId", movieId);
         return namedParameterJdbcTemplate.queryForObject(sql, sqlParameterSource, new MovieAndDirectorRowMapper());
     }

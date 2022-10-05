@@ -2,7 +2,7 @@ create table director(
     director_id int primary key,
     first_name varchar(30),
     last_name varchar(30),
-    active int
+    active bit
 );
 
 create table movie(

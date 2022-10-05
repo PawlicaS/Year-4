@@ -8,6 +8,6 @@ public interface DirectorService {
     List<Director> listAll();
     boolean addDirector(Director newDirector);
     boolean deleteDirector(int directorId);
-    boolean changeActive(int directorId, boolean newActive);
+    boolean changeActive(int directorId, int newActive);
     int inactiveDirectors();
 }
