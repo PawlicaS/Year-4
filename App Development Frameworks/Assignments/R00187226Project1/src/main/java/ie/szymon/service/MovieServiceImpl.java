@@ -83,6 +83,10 @@ public class MovieServiceImpl implements MovieService {
             log.error("Could not get average from director because a director with id " + directorId + " does not exist");
             return 0;
         }
+        if (movieRepo.findMoviesByDirector(directorId).size() == 0) {
+            log.error("Could not get average from director because a director with id " + directorId + " does not have any movies");
+            return 0;
+        }
         return movieRepo.findAverageIncomeForDirector(directorId);
     }
 

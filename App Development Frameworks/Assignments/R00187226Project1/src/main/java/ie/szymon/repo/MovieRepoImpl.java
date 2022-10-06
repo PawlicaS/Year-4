@@ -38,7 +38,9 @@ public class MovieRepoImpl implements MovieRepo {
     @Override
     public boolean existsByNameAndDirector(String title, int directorId) {
         String sql = "select count(*) from movie where title = :title and director_id = :directorId";
-        SqlParameterSource sqlParameterSource = new MapSqlParameterSource().addValue("title", title).addValue("director_id", directorId);
+        SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
+                .addValue("title", title)
+                .addValue("directorId", directorId);
         Integer number = namedParameterJdbcTemplate.queryForObject(sql, sqlParameterSource, Integer.class);
         return number != null && number == 1;
     }
@@ -57,9 +59,9 @@ public class MovieRepoImpl implements MovieRepo {
 
     @Override
     public int changeTakings(int movieId, int takings) {
-        String sql = "update movie set active = :takings where movie_id = :movieId";
+        String sql = "update movie set takings = :takings where movie_id = :movieId";
         SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
-                .addValue("director_id", movieId)
+                .addValue("movieId", movieId)
                 .addValue("takings", takings);
         return namedParameterJdbcTemplate.update(sql, sqlParameterSource);
     }
