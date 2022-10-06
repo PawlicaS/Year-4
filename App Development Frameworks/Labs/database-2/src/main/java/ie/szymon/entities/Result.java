@@ -1,4 +1,4 @@
 package ie.szymon.entities;
 
-public class Result {
-}
+// Record is a restricted class that is designed to carry data.
+public record Result(String schoolName, String subjectName){};

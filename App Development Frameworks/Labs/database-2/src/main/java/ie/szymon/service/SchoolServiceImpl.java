@@ -16,7 +16,7 @@ public class SchoolServiceImpl implements SchoolService {
 
     @Override
     public int count() {
-        return 0;
+        return schoolRepo.count();
     }
 
     @Override
@@ -29,7 +29,7 @@ public class SchoolServiceImpl implements SchoolService {
         if (schoolRepo.exists(id))
             return schoolRepo.findById(id);
         log.error("Could not find school with id " + id + " because it does not exist");
-        return schoolRepo.findById(1);
+        return new School();
     }
 
     @Override
