@@ -155,12 +155,12 @@ def evaluation_of_results(min_word_occurrence):
         accuracy_means.append(accuracy_mean)
         print(f"The mean accuracy for this split is {accuracy_mean:.4f}\n")
     highest_accuracy_word_length = accuracy_means.index(max(accuracy_means)) + 1
-    print(f"Highest accuracy minimum word length: {highest_accuracy_word_length}, with a mean accuracy of: {max(accuracy_means)}")
+    print(f"Highest accuracy minimum word length: {highest_accuracy_word_length}, with a mean accuracy of: {max(accuracy_means):.4f}")
     print()
 
     prediction = []
     words = count_words(training_data, highest_accuracy_word_length, min_word_occurrence)
-    positive_reviews, negative_reviews = count_frequencies(training_split, words)
+    positive_reviews, negative_reviews = count_frequencies((training_data.to_frame().join(training_labels)), words)
     positive_word_occurrences, prior_positive, negative_word_occurrences, prior_negative = calculate_feature_likelihoods(
         positive_reviews, positive_count, negative_reviews, negative_count)
 
