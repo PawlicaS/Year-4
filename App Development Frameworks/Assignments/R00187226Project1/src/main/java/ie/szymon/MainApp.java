@@ -56,7 +56,7 @@ public class MainApp {
 
         //Delete a movie given its ID
         System.out.println("--Delete a movie given its ID--");
-        movieService.deleteMovie(6);
+        movieService.deleteMovie(7);
         movieService.listAll().forEach(System.out::println);
         System.out.println();
 

@@ -13,6 +13,7 @@ from math import log, exp
 from sklearn import metrics
 from sklearn import model_selection
 from sklearn import neighbors
+from statistics import mean
 
 FILE = "movie_reviews.xlsx"
 DF = pd.read_excel(FILE)
@@ -39,7 +40,7 @@ def split_reviews():
     print(f"Positive reviews in the testing set: {test_labels.value_counts()[1]}")
     print(f"Negative reviews in the testing set: {test_labels.value_counts()[0]}")
 
-    return training_split, training_data, training_labels, testing_split, test_data, test_labels, training_positive_count, training_negative_count
+    return training_data, training_labels, test_data, test_labels, training_positive_count, training_negative_count
 
 
 def count_words(training_data, min_word_length, min_word_occurrence):
@@ -115,114 +116,89 @@ def likelihood_classification(review, positive_word_occurrences, prior_positive,
             negative += log(negative_word_occurrences[word])
 
     if exp(positive) - exp(negative) > prior_negative - prior_positive:
-        prediction = "Positive"
+        prediction = 1
     else:
-        prediction = "Negative"
+        prediction = 0
 
-    print(f"It looks like your review is {prediction}")
+    return prediction
 
-def evaluation_of_results(test_split, test_data, test_labels, training_split, training_data, training_labels, positive_word_occurrences, prior_positive, negative_word_occurrences, prior_negative):
-    data = DF['Review']
-    target = DF['Sentiment']
+def evaluation_of_results(min_word_occurrence):
+    training_data, training_labels, test_data, test_labels, positive_count, negative_count = split_reviews()
 
-    train_index = training_labels
-    test_index = test_labels
+    accuracy_means = []
+    splits_number = 6
+    kf = model_selection.StratifiedKFold(n_splits=splits_number, shuffle=True)
 
-    positive = len(data[target==1])
-    negative = len(data[target==0])
+    for k in range(1, 11):
+        accuracies = []
+        split = 0
+
+        for train_index, test_index in kf.split(training_data, training_labels):
+            split += 1
+            prediction = []
+
+            # Train the classifier, running Tasks 2-4
+            words = count_words(training_data.iloc[train_index], k, min_word_occurrence)
+            positive_reviews, negative_reviews = count_frequencies((training_data.to_frame().join(training_labels)).iloc[train_index], words)
+            positive_word_occurrences, prior_positive, negative_word_occurrences, prior_negative = calculate_feature_likelihoods(
+                positive_reviews, positive_count, negative_reviews, negative_count)
+
+            # Find the likelihood that the review is either negative or positive
+            for review in training_data.iloc[test_index]:
+                prediction.append(likelihood_classification(review, positive_word_occurrences, prior_positive,
+                                                            negative_word_occurrences, prior_negative))
+
+            accuracy = metrics.accuracy_score(training_labels.iloc[test_index], prediction)
+            accuracies.append(accuracy)
+            print(f"Split {split} - Using minimum word length of {k} the accuracy is: {accuracy:.4f}")
+        accuracy_mean = mean(accuracies)
+        accuracy_means.append(accuracy_mean)
+        print(f"The mean accuracy for this split is {accuracy_mean:.4f}\n")
+    highest_accuracy_word_length = accuracy_means.index(max(accuracy_means)) + 1
+    print(f"Highest accuracy minimum word length: {highest_accuracy_word_length}, with a mean accuracy of: {max(accuracy_means)}")
+    print()
 
     prediction = []
+    words = count_words(training_data, highest_accuracy_word_length, min_word_occurrence)
+    positive_reviews, negative_reviews = count_frequencies(training_split, words)
+    positive_word_occurrences, prior_positive, negative_word_occurrences, prior_negative = calculate_feature_likelihoods(
+        positive_reviews, positive_count, negative_reviews, negative_count)
+
     for review in test_data:
-        positive_likelihood = 0
-        negative_likelihood = 0
+        prediction.append(
+            likelihood_classification(review, positive_word_occurrences, prior_positive, negative_word_occurrences,
+                                      prior_negative))
 
-        for word in review:
-            if word in positive_word_occurrences:
-                positive_likelihood += log(positive_word_occurrences[word])
+    confusion = metrics.confusion_matrix(test_labels, prediction)
+    print(f"True Positive: {(confusion[0, 0] / np.sum(confusion)) * 100:.4f}")
+    print(f"False Positive: {(confusion[0, 1] / np.sum(confusion)) * 100:.4f}")
+    print(f"True Negative: {(confusion[1, 1] / np.sum(confusion)) * 100:.4f}")
+    print(f"False Negative: {(confusion[1, 0] / np.sum(confusion)) * 100:.4f}")
+    print()
 
-            if word in negative_word_occurrences:
-                negative_likelihood += log(negative_word_occurrences[word])
-
-        if exp(positive_likelihood) - exp(negative_likelihood) > prior_negative - prior_positive:
-            prediction.append(1)
-        else:
-            prediction.append(0)
-
-    confusion = metrics.confusion_matrix(target[test_index], prediction)
-    print(confusion)
-
-    accuracy = metrics.accuracy_score(target[test_index], prediction)
-    print(accuracy)
-
-    #TODO k-fold
-    kf = model_selection.StratifiedKFold(n_splits=min(positive, negative), shuffle=True)
-
-    ROC_X = np.array([0])
-    ROC_Y = np.array([0])
-
-    for k in range(1, 10):
-        true_negative = []
-        true_positive = []
-        false_negative = []
-        false_positive = []
-        for train_index, test_index in kf.split(data, target):
-            clf = neighbors.KNeighborsClassifier(n_neighbors=k)
-            clf.fit(data[train_index], target[train_index])
-            predicted_labels = clf.predict(data[test_index])
-
-            C = metrics.confusion_matrix(target[test_index], predicted_labels)
-
-            true_negative.append(C[0, 0])
-            true_positive.append(C[1, 1])
-            false_negative.append(C[1, 0])
-            false_positive.append(C[0, 1])
-
-        print("k =", k)
-        print("True Negative:", np.sum(true_negative))
-        print("True Positive:", np.sum(true_positive))
-        print("False Negative:", np.sum(false_negative))
-        print("False Positive:", np.sum(false_positive))
-        print()
-
-        ROC_X = np.append(ROC_X, np.sum(false_positive))
-        ROC_Y = np.append(ROC_Y, np.sum(true_positive))
-
-    index = np.argsort(ROC_X)
-
-    print(ROC_X)
-    print(ROC_Y)
-    print(index)
-
-    plt.close('all')
-    plt.figure()
-    plt.plot(ROC_X[index], ROC_Y[index])
-    plt.axis([0, np.max(ROC_X), 0, np.max(ROC_Y)])
-    plt.show()
+    accuracy = metrics.accuracy_score(test_labels, prediction)
+    print(f"Accuracy score: {accuracy:.4f}")
 
 def main():
-    while True:
-        min_word_length = input("What is the minimum length of a word: ")
-        if min_word_length.isnumeric():
-            if int(min_word_length) > 0:
-                min_word_length = int(min_word_length)
-                break
+    # while True:
+    #     min_word_length = input("What is the minimum length of a word: ")
+    #     if min_word_length.isnumeric():
+    #         if int(min_word_length) > 0:
+    #             min_word_length = int(min_word_length)
+    #             break
 
     while True:
         min_word_occurrence = input("What is the minimum word occurrence: ")
         if min_word_occurrence.isnumeric():
-            if int(min_word_length) > 0:
+            if int(min_word_occurrence) > 0:
                 min_word_occurrence = int(min_word_occurrence)
                 break
 
-    review = input("Input a review here:\n")
-    review = re.sub(r"[^a-zA-Z0-9\s]", "", review).lower().split(" ")
+    # review = input("Input a review here:\n")
+    # review = re.sub(r"[^a-zA-Z0-9\s]", "", review).lower().split(" ")
 
-    training_split, training_data, training_labels, testing_split, test_data, test_labels, positive_count, negative_count = split_reviews()
-    words = count_words(training_data, min_word_length, min_word_occurrence)
-    positive_reviews, negative_reviews = count_frequencies(training_split, words)
-    positive_word_occurrences, prior_positive, negative_word_occurrences, prior_negative = calculate_feature_likelihoods(positive_reviews, positive_count, negative_reviews, negative_count)
-    likelihood_classification(review, positive_word_occurrences, prior_positive, negative_word_occurrences, prior_negative)
-    evaluation_of_results(testing_split, test_data, test_labels, training_split, training_data, training_labels, positive_word_occurrences, prior_positive, negative_word_occurrences, prior_negative)
+    
+    evaluation_of_results(min_word_occurrence)
 
 
 main()
