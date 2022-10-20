@@ -85,6 +85,7 @@ def count_frequencies(training_split, words):
 
     return positive_review_count, negative_review_count
 
+
 def calculate_feature_likelihoods(positive_reviews, positive_count, negative_reviews, negative_count):
     # Find what are the chances of a word occurring in a positive or negative review
     total_count = positive_count + negative_count
@@ -93,17 +94,21 @@ def calculate_feature_likelihoods(positive_reviews, positive_count, negative_rev
     negative_word_occurrences = {}
 
     for word in positive_reviews:
-        positive_word_occurrences[word] = (positive_reviews[word] + alpha) / (positive_count + (alpha * len(positive_reviews)))
+        positive_word_occurrences[word] = (positive_reviews[word] + alpha) / (
+                    positive_count + (alpha * len(positive_reviews)))
 
     for word in negative_reviews:
-        negative_word_occurrences[word] = (negative_reviews[word] + alpha) / (negative_count + (alpha * len(negative_reviews)))
+        negative_word_occurrences[word] = (negative_reviews[word] + alpha) / (
+                    negative_count + (alpha * len(negative_reviews)))
 
     prior_positive = positive_count / total_count
     negative_chance = negative_count / total_count
 
     return positive_word_occurrences, prior_positive, negative_word_occurrences, negative_chance
 
-def likelihood_classification(review, positive_word_occurrences, prior_positive, negative_word_occurrences, prior_negative):
+
+def likelihood_classification(review, positive_word_occurrences, prior_positive, negative_word_occurrences,
+                              prior_negative):
     # Based on the input 'review' calculate the chances of it being a positive or negative review
     positive = 0
     negative = 0
@@ -122,6 +127,7 @@ def likelihood_classification(review, positive_word_occurrences, prior_positive,
 
     return prediction
 
+
 def evaluation_of_results(min_word_occurrence):
     training_data, training_labels, test_data, test_labels, positive_count, negative_count = split_reviews()
 
@@ -139,7 +145,8 @@ def evaluation_of_results(min_word_occurrence):
 
             # Train the classifier, running Tasks 2-4
             words = count_words(training_data.iloc[train_index], k, min_word_occurrence)
-            positive_reviews, negative_reviews = count_frequencies((training_data.to_frame().join(training_labels)).iloc[train_index], words)
+            positive_reviews, negative_reviews = count_frequencies(
+                (training_data.to_frame().join(training_labels)).iloc[train_index], words)
             positive_word_occurrences, prior_positive, negative_word_occurrences, prior_negative = calculate_feature_likelihoods(
                 positive_reviews, positive_count, negative_reviews, negative_count)
 
@@ -155,7 +162,8 @@ def evaluation_of_results(min_word_occurrence):
         accuracy_means.append(accuracy_mean)
         print(f"The mean accuracy for this split is {accuracy_mean:.4f}\n")
     highest_accuracy_word_length = accuracy_means.index(max(accuracy_means)) + 1
-    print(f"Highest accuracy minimum word length: {highest_accuracy_word_length}, with a mean accuracy of: {max(accuracy_means):.4f}")
+    print(
+        f"Highest accuracy minimum word length: {highest_accuracy_word_length}, with a mean accuracy of: {max(accuracy_means):.4f}")
     print()
 
     prediction = []
@@ -179,6 +187,7 @@ def evaluation_of_results(min_word_occurrence):
     accuracy = metrics.accuracy_score(test_labels, prediction)
     print(f"Accuracy score: {accuracy:.4f}")
 
+
 def main():
     # while True:
     #     min_word_length = input("What is the minimum length of a word: ")
@@ -197,7 +206,6 @@ def main():
     # review = input("Input a review here:\n")
     # review = re.sub(r"[^a-zA-Z0-9\s]", "", review).lower().split(" ")
 
-    
     evaluation_of_results(min_word_occurrence)
 
 
