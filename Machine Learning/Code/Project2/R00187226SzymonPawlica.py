@@ -12,7 +12,7 @@ import pandas as pd
 import numpy as np
 import random
 
-dataset = pd.read_csv("C:/Users/szymo/Documents/College/Year-4/Machine Learning/Code/Project2/product_images.csv")
+dataset = pd.read_csv("product_images.csv")
 
 
 def preprocessing_and_visualisation():
@@ -41,20 +41,21 @@ def preprocessing_and_visualisation():
     return values, labels
 
 
+# Use different samples sizes as % of full dataset
+sizes = [.1, .2], [.2, .4], [.3, .6], [.33, .67]
+classifiers = {"perceptron": {},
+               "SVM": {},
+               "k_nearest_neighbour": {},
+               "decision_trees": {}
+               }
+
+
 def evaluation_procedure(data, target):
-    # Use different samples sizes as % of full dataset
-    sizes = [.1, .2], [.2, .4], [.3, .6], [.33, .67]
-    classifiers = {"perceptron": {},
-                   "SVM": {},
-                   "k_nearest_neighbour": {},
-                   "decision_trees": {}
-                   }
-    plt_titles = []
-    plt_train_times = []
-    plt_predict_times = []
+    plt_titles, plt_train_times, plt_predict_times = [], [], []
 
     # Run for each classifier
     for classifier in classifiers:
+        classifier_accuracy_means = []
         # Place to hold sample sizes
         classifiers[classifier]['samples'] = {}
 
@@ -68,9 +69,9 @@ def evaluation_procedure(data, target):
             # Place to hold accuracies and times for current sample size
             classifiers[classifier]['samples'][sample_size] = {}
             print(f"\n> Using {sample_size:.1f}% of Samples <")
-            kf = model_selection.KFold(n_splits=3, shuffle=True)
+            kf = model_selection.KFold(n_splits=5, shuffle=True)
 
-            for k in range(1, 2):
+            for k in range(1, 11):
                 print(f"Classifier {classifier}: K {k}")
                 print("-------------------------------------")
                 accuracies, training_times, prediction_times = [], [], []
@@ -131,12 +132,13 @@ def evaluation_procedure(data, target):
                 print(f"Average Processing Time Required for Prediction {mean_ptime:.4f}s")
                 classifier_prediction_times.append(mean_ptime)
 
-            # Find which K has the most accurate mean prediction
-            best_k = classifier_accuracies.index(max(classifier_accuracies)) + 1
-            print(f"Best K = {best_k}")
+            # Find which K has the most accurate mean prediction for K-Nearest Neighbours classifier
+            if classifier == "k_nearest_neighbour":
+                best_k = classifier_accuracies.index(max(classifier_accuracies)) + 1
+                print(f"Best K = {best_k}")
 
-            # Find average accuracy of all K's
-            print(f"Average Accuracy Score of All K's - {mean(classifier_accuracies):.4f}")
+            # Find average accuracy of all K's for classifier
+            print(f"Average Accuracy Score of All K's - {mean(classifier_accuracies):.4f}\n")
 
             # Add the mean accuracy, training and prediction times to current sample size in dictionary
             classifiers[classifier]['samples'][sample_size]['accuracy'] = mean(classifier_accuracies)
@@ -147,6 +149,11 @@ def evaluation_procedure(data, target):
             plt_titles.append(classifier[0].upper() + " " + str(sample_size) + "%")
             plt_train_times.append(classifiers[classifier]['samples'][sample_size]['train_time'])
             plt_predict_times.append(classifiers[classifier]['samples'][sample_size]['predict_time'])
+
+            # Add data to find the best achievable mean
+            classifier_accuracy_means.append(classifiers[classifier]['samples'][sample_size]['accuracy'])
+
+        print(f"The best Achievable Mean Prediction for {classifier} is {max(classifier_accuracy_means):.4f}")
 
     plt.figure()
     plt.title("Classifier sample-size: runtime relationship")
