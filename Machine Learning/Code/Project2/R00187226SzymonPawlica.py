@@ -69,9 +69,9 @@ def evaluation_procedure(data, target):
             # Place to hold accuracies and times for current sample size
             classifiers[classifier]['samples'][sample_size] = {}
             print(f"\n> Using {sample_size:.1f}% of Samples <")
-            kf = model_selection.KFold(n_splits=5, shuffle=True)
+            kf = model_selection.KFold(n_splits=3, shuffle=True)
 
-            for k in range(1, 11):
+            for k in range(1, 2):
                 print(f"Classifier {classifier}: K {k}")
                 print("-------------------------------------")
                 accuracies, training_times, prediction_times = [], [], []
@@ -122,13 +122,13 @@ def evaluation_procedure(data, target):
                 print(f"Average Accuracy Score - {mean_acc:.4f}")
                 classifier_accuracies.append(mean_acc)
                 mean_ttime = mean(training_times)
-                print(f"Minimum Processing Time Required for Training {min(training_times):.4f}s")
-                print(f"Maximum Processing Time Required for Training {max(training_times):.4f}s")
+                print(f"Minimum Processing Time Required for Training {(min(training_times)/(len(train_data) + len(test_data)))}s")
+                print(f"Maximum Processing Time Required for Training {(max(training_times)/(len(train_data) + len(test_data)))}s")
                 print(f"Average Processing Time Required for Training {mean_ttime:.4f}s")
                 classifier_train_times.append(mean_ttime)
                 mean_ptime = mean(prediction_times)
-                print(f"Minimum Processing Time Required for Prediction {min(prediction_times):.4f}s")
-                print(f"Maximum Processing Time Required for Prediction {max(prediction_times):.4f}s")
+                print(f"Minimum Processing Time Required for Prediction {(min(prediction_times)/(len(train_data) + len(test_data)))}s")
+                print(f"Maximum Processing Time Required for Prediction {(max(prediction_times)/(len(train_data) + len(test_data)))}s")
                 print(f"Average Processing Time Required for Prediction {mean_ptime:.4f}s")
                 classifier_prediction_times.append(mean_ptime)
 
