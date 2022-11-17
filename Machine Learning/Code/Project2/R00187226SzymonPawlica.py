@@ -69,9 +69,9 @@ def evaluation_procedure(data, target):
             # Place to hold accuracies and times for current sample size
             classifiers[classifier]['samples'][sample_size] = {}
             print(f"\n> Using {sample_size:.1f}% of Samples <")
-            kf = model_selection.KFold(n_splits=3, shuffle=True)
+            kf = model_selection.KFold(n_splits=5, shuffle=True)
 
-            for k in range(1, 2):
+            for k in range(1, 11):
                 print(f"Classifier {classifier}: K {k}")
                 print("-------------------------------------")
                 accuracies, training_times, prediction_times = [], [], []
