@@ -16,19 +16,19 @@ import java.util.List;
 @Entity
 @Table(name = "departments")
 public class Department {
-    public Department(String departmentTitle, String departmentEmail) {
-        this.departmentTitle = departmentTitle;
-        this.departmentEmail = departmentEmail;
+    public Department(String title, String email) {
+        this.title = title;
+        this.email = email;
     }
 
     @Id
-    @Column(name = "departmentTitle", nullable = false)
-    private String departmentTitle;
+    @Column(nullable = false)
+    private String title;
 
-    @Column(name = "departmentEmail", nullable = false)
-    private String departmentEmail;
+    @Column(nullable = false)
+    private String email;
 
-    @OneToMany(mappedBy = "department", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+    @OneToMany(orphanRemoval = true, mappedBy = "department")
     @ToString.Exclude
-    private List<Office> films = new ArrayList<>();
+    private List<Office> offices = new ArrayList<>();
 }

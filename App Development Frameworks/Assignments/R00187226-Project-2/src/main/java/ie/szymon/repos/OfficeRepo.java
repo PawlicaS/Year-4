@@ -13,15 +13,15 @@ import java.util.Optional;
 public interface OfficeRepo extends JpaRepository<Office, Integer> {
     List<Office> findAll();
     Optional<Office> findByOfficeNo(int officeNo);
-    List<Office> findAllByDepartment_DepartmentTitle(String departmentTitle);
-    @Query("select o from Office o where officeCurrOccupancy = 0")
+    List<Office> findAllByDepartment_Title(String Title);
+    @Query("select o from Office o where currOccupancy = 0")
     List<Office> findAllEmptyOffices();
-    @Query("select o from Office o where officeCurrOccupancy < officeMaxOccupancy")
+    @Query("select o from Office o where currOccupancy < maxOccupancy")
     List<Office> findAllNotFullOffices();
     int deleteByOfficeNo(int officeNo);
 
     @Modifying
-    @Query(value = "update Office o set o.officeCurrOccupancy = :newOfficeCurrOccupancy where o.officeNo = :officeNo")
+    @Query(value = "update Office o set o.currOccupancy = :newCurrOccupancy where o.officeNo = :officeNo")
     @Transactional
-    void updateOfficeCurrOccupancy(@Param("newOfficeCurrOccupancy") int newOfficeCurrOccupancy, @Param("officeNo") int officeNo);
+    void updateOfficeCurrOccupancy(@Param("newCurrOccupancy") int newCurrOccupancy, @Param("officeNo") int officeNo);
 }

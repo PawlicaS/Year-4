@@ -2,6 +2,7 @@ package ie.szymon.entities;
 
 import javax.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,16 +14,17 @@ import lombok.NoArgsConstructor;
 @Table(name = "offices")
 public class Office {
     @Id
-    @Column(name = "officeNo", nullable = false)
+    @Column(nullable = false)
     private int officeNo;
 
-    @Column(name = "officeMaxOccupancy", nullable = false)
-    private int officeMaxOccupancy;
+    @Column(nullable = false)
+    private int maxOccupancy;
 
-    @Column(name = "officeCurrOccupancy", nullable = false)
-    private int officeCurrOccupancy;
+    @Column(nullable = false)
+    private int currOccupancy;
 
     @ManyToOne
-    @JoinColumn(name = "departmentTitle", nullable = false)
+    @JsonIgnore
+    @JoinColumn(nullable = false)
     private Department department;
 }

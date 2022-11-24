@@ -30,16 +30,16 @@ public class DataLoader implements CommandLineRunner {
         System.out.println();
 
         departmentRepo.findAll().forEach(System.out::println);
-        System.out.println(departmentRepo.findByDepartmentTitle("Test2"));
+        System.out.println(departmentRepo.findByTitle("Test2"));
         officeRepo.findAll().forEach(System.out::println);
         System.out.println();
         officeRepo.findAllEmptyOffices().forEach(System.out::println);
         System.out.println();
         officeRepo.findAllNotFullOffices().forEach(System.out::println);
         System.out.println();
-        officeRepo.findAllByDepartment_DepartmentTitle("Test2").forEach(System.out::println);
+        officeRepo.findAllByDepartment_Title("Test2").forEach(System.out::println);
         System.out.println();
-        officeRepo.findAllByDepartment_DepartmentTitle("Test5").forEach(System.out::println);
+        officeRepo.findAllByDepartment_Title("Test5").forEach(System.out::println);
         System.out.println();
         officeRepo.updateOfficeCurrOccupancy(19, 120);
         officeRepo.findAll().forEach(System.out::println);
