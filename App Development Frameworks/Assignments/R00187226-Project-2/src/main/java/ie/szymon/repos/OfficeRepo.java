@@ -18,7 +18,6 @@ public interface OfficeRepo extends JpaRepository<Office, Integer> {
     List<Office> findAllEmptyOffices();
     @Query("select o from Office o where currOccupancy < maxOccupancy")
     List<Office> findAllNotFullOffices();
-    int deleteByOfficeNo(int officeNo);
 
     @Modifying
     @Query(value = "update Office o set o.currOccupancy = :newCurrOccupancy where o.officeNo = :officeNo")

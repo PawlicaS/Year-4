@@ -2,6 +2,7 @@ package ie.szymon.entities;
 
 import javax.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,6 +30,7 @@ public class Department {
     private String email;
 
     @OneToMany(orphanRemoval = true, mappedBy = "department")
+    @JsonIgnore
     @ToString.Exclude
     private List<Office> offices = new ArrayList<>();
 }
