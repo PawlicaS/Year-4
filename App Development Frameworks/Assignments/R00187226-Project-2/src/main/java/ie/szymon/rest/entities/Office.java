@@ -1,4 +1,4 @@
-package ie.szymon.entities;
+package ie.szymon.rest.entities;
 
 import javax.persistence.*;
 

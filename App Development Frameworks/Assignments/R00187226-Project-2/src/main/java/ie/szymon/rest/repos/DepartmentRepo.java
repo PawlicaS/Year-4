@@ -1,12 +1,10 @@
-package ie.szymon.repos;
+package ie.szymon.rest.repos;
 
-import ie.szymon.entities.Department;
+import ie.szymon.rest.entities.Department;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface DepartmentRepo extends JpaRepository<Department, String> {
     List<Department> findAll();
-    Optional<Department> findByTitle(String Title);
 }

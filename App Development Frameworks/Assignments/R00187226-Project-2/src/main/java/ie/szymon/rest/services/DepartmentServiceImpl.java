@@ -1,7 +1,7 @@
-package ie.szymon.services;
+package ie.szymon.rest.services;
 
-import ie.szymon.entities.Department;
-import ie.szymon.repos.DepartmentRepo;
+import ie.szymon.rest.entities.Department;
+import ie.szymon.rest.repos.DepartmentRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +21,12 @@ public class DepartmentServiceImpl implements DepartmentService {
         else {
             return departmentRepo.findAll();
         }
+    }
+
+    @Override
+    public Department findDepartment(String title) {
+        Optional<Department> departmentOptional = departmentRepo.findById(title);
+        return departmentOptional.orElse(null);
     }
 
     @Override

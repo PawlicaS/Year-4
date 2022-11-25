@@ -1,6 +1,6 @@
 package ie.szymon.rest.controllers.dto;
 
-import ie.szymon.entities.Department;
+import ie.szymon.rest.entities.Department;
 import ie.szymon.rest.controllers.WebService;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.server.mvc.RepresentationModelAssemblerSupport;
