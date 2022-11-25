@@ -4,6 +4,7 @@ import ie.szymon.rest.entities.Department;
 import ie.szymon.rest.entities.Office;
 import ie.szymon.rest.repos.DepartmentRepo;
 import ie.szymon.rest.repos.OfficeRepo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -11,7 +12,10 @@ import org.springframework.stereotype.Component;
 @Component
 @Profile("test")
 public class DataLoaderTest implements CommandLineRunner {
+    @Autowired
     DepartmentRepo departmentRepo;
+
+    @Autowired
     OfficeRepo officeRepo;
 
     @Override

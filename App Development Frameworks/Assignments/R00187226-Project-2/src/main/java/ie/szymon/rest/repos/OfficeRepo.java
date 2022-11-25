@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface OfficeRepo extends JpaRepository<Office, Integer> {
-    List<Office> findAll();
     List<Office> findAllByDepartment_Title(String Title);
     @Query("select o from Office o where currOccupancy = 0")
     List<Office> findAllEmptyOffices();
