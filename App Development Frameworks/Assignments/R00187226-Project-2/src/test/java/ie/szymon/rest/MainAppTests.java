@@ -21,9 +21,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest("ie.szymon.rest")
 @AutoConfigureMockMvc
 class MainAppTests {
-	@Test
-	void contextLoads() {
-	}
 	@Autowired
 	MockMvc mockMvc;
 	@Test
@@ -39,13 +36,13 @@ class MainAppTests {
 	void getADepartment() {
 		mockMvc.perform(MockMvcRequestBuilders.get("/departments/{id}", "Test1"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.title").value("Test1"));
+				.andExpect(jsonPath("$.departmentTitle").value("Test1"));
 	}
 
 	@Test
 	@SneakyThrows
 	void getADepartmentNoSuchID() {
-		mockMvc.perform(MockMvcRequestBuilders.get("/departments/{id}", "Test5"))
+		mockMvc.perform(MockMvcRequestBuilders.get("/departments/{id}", "Test6"))
 				.andExpect(status().isNotFound());
 	}
 
@@ -77,7 +74,7 @@ class MainAppTests {
 	@WithMockUser(roles="HOS")
 	void postNewDepartmentOkAndHOS() {
 		String jsonString = new ObjectMapper().writeValueAsString(new NewDepartment("Test5", "test5@mtu.ie"));
-		mockMvc.perform(MockMvcRequestBuilders.post("/departments")
+		mockMvc.perform(MockMvcRequestBuilders.post("/departments/add")
 						.content(jsonString)
 						.contentType(MediaType.APPLICATION_JSON)
 						.accept(MediaType.APPLICATION_JSON))
@@ -90,18 +87,7 @@ class MainAppTests {
 	@WithMockUser(roles="HOD")
 	void postNewDepartmentOkNotHOS() {
 		String jsonString = new ObjectMapper().writeValueAsString(new NewDepartment("Test5", "test5@mtu.ie"));
-		mockMvc.perform(MockMvcRequestBuilders.post("/departments")
-						.content(jsonString)
-						.contentType(MediaType.APPLICATION_JSON)
-						.accept(MediaType.APPLICATION_JSON))
-				.andExpect(status().isUnauthorized());
-	}
-
-	@Test
-	@SneakyThrows
-	void postNewDepartmentOkNoUser() {
-		String jsonString = new ObjectMapper().writeValueAsString(new NewDepartment("Test5", "test5@mtu.ie"));
-		mockMvc.perform(MockMvcRequestBuilders.post("/departments")
+		mockMvc.perform(MockMvcRequestBuilders.post("/departments/add")
 						.content(jsonString)
 						.contentType(MediaType.APPLICATION_JSON)
 						.accept(MediaType.APPLICATION_JSON))
@@ -110,10 +96,21 @@ class MainAppTests {
 
 	@Test
 	@SneakyThrows
+	void postNewDepartmentOkNoUser() {
+		String jsonString = new ObjectMapper().writeValueAsString(new NewDepartment("Test5", "test5@mtu.ie"));
+		mockMvc.perform(MockMvcRequestBuilders.post("/departments/add")
+						.content(jsonString)
+						.contentType(MediaType.APPLICATION_JSON)
+						.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	@SneakyThrows
 	@WithMockUser(roles="HOS")
 	void postNewDepartmentConflict() {
-		String jsonString = new ObjectMapper().writeValueAsString(new NewDepartment("Test5", "test5@mtu.ie"));
-		mockMvc.perform(MockMvcRequestBuilders.post("/departments")
+		String jsonString = new ObjectMapper().writeValueAsString(new NewDepartment("Test1", "test1@mtu.ie"));
+		mockMvc.perform(MockMvcRequestBuilders.post("/departments/add")
 						.content(jsonString)
 						.contentType(MediaType.APPLICATION_JSON)
 						.accept(MediaType.APPLICATION_JSON))
@@ -125,7 +122,7 @@ class MainAppTests {
 	@WithMockUser(roles="HOS")
 	void postNewDepartmentWrongJson() {
 		String jsonString = new ObjectMapper().writeValueAsString(new NewDepartment("", "test5@mtu.ie"));
-		mockMvc.perform(MockMvcRequestBuilders.post("/departments")
+		mockMvc.perform(MockMvcRequestBuilders.post("/departments/add")
 						.content(jsonString)
 						.contentType(MediaType.APPLICATION_JSON)
 						.accept(MediaType.APPLICATION_JSON))

@@ -46,12 +46,14 @@ public class WebService {
     @PostMapping({"/departments/add"})
     @ResponseStatus(HttpStatus.CREATED)
     public DepartmentDto addDepartment(@RequestBody @Valid NewDepartment payload, BindingResult bindingResult) {
-        try {
-            if (bindingResult.hasErrors())
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "JSON was malformed or there are errors.");
+        if (bindingResult.hasErrors())
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "JSON was malformed or there are errors.");
+        Optional<Department> departmentOptional = departmentRepo.findById(payload.title());
+        if (departmentOptional.isEmpty()) {
             Department newDepartment = new Department(payload.title(), payload.email());
             return departmentDtoMapper.toModel(departmentRepo.save(newDepartment));
-        } catch (DataIntegrityViolationException ex) {
+        }
+        else {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Department with title " + payload.title() + " already exists.");
         }
     }
@@ -71,7 +73,8 @@ public class WebService {
             else {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Office with officeNo " + payload.officeNo() + " already exists.");
             }
-        } else {
+        }
+        else {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Department with title " + payload.departmentTitle() + " could not be found.");
         }
     }
