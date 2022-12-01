@@ -9,7 +9,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from sklearn import model_selection
 
-dataset = pd.read_csv("C:/Users/szymo/Documents/College/Year-4/Machine Learning/Code/Project3/energy_performance.csv")
+dataset = pd.read_csv("energy_performance.csv")
 
 
 def input_data():
@@ -53,17 +53,22 @@ def calculate_model_function(deg, data, p):
         for i in range(n + 1):
             for j in range(n + 1):
                 for k in range(n + 1):
-                    if i + j + k == n:
-                        result += p[t] * (
-                                data[:, 0] ** i) * (
-                                 data[:, 1] ** j) * (
-                                 data[:, 2] ** k) * (
-                                 data[:, 3] ** (n - i)) * (
-                                 data[:, 4] ** (n - j)) * (
-                                 data[:, 5] ** (n - k)) * (
-                                 data[:, 6] ** i) * (
-                                 data[:, 7] ** j)
-                        t += 1
+                    for l in range(n + 1):
+                        for m in range(n + 1):
+                            for o in range(n + 1):
+                                for q in range(n + 1):
+                                    for r in range(n + 1):
+                                        if i + j + k + l + m + o + q + r == n:
+                                            result += p[t] * (
+                                                     data[:, 0] ** i) * (
+                                                     data[:, 1] ** j) * (
+                                                     data[:, 2] ** k) * (
+                                                     data[:, 3] ** l) * (
+                                                     data[:, 4] ** m) * (
+                                                     data[:, 5] ** o) * (
+                                                     data[:, 6] ** q) * (
+                                                     data[:, 7] ** r)
+                                            t += 1
     return result
 
 
@@ -89,7 +94,8 @@ def linearize(deg, data, p0):
 def calculate_update(y, f0, J):
     l = 1e-2
 
-    # Regularisation
+    # Regularisation happens here, it's calculated by adding a small parameter update "l",
+    # it slows down convergence and ensures matrix N can be inverted
     N = np.matmul(J.T, J) + l * np.eye(J.shape[1])
 
     # Residual vector is the target vector and the model function output
@@ -101,7 +107,11 @@ def calculate_update(y, f0, J):
 
 def regression(deg, data, target):
     max_iter = 10
+
+    # Parameter vector
     p0 = np.zeros(num_coefficients_8(deg))
+
+    # The parameter vector is updated
     for i in range(max_iter):
         f0, J = linearize(deg, data, p0)
         dp = calculate_update(target, f0, J)
