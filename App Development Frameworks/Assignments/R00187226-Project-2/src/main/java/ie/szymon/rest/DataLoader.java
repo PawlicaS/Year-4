@@ -28,7 +28,7 @@ public class DataLoader implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         Department d1 = departmentRepo.save(new Department("Computer Science", "computercience@mtu.ie"));
-        Office o1 = officeRepo.save(new Office(101, 5, 0, d1));
+        Office o1 = officeRepo.save(new Office(101, 5, 1, d1));
         Office o2 = officeRepo.save(new Office(102, 6, 3, d1));
         Office o3 = officeRepo.save(new Office(103, 7, 2, d1));
 

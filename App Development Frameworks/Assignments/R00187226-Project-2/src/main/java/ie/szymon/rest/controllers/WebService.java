@@ -43,6 +43,11 @@ public class WebService {
         return officeDtoMapper.toCollectionModel(officeRepo.findAll());
     }
 
+    // http://localhost:8080/departments/add
+    //{
+    //    "title": "Test",
+    //    "email": "test@mtu.ie"
+    //}
     @PostMapping({"/departments/add"})
     @ResponseStatus(HttpStatus.CREATED)
     public DepartmentDto addDepartment(@RequestBody @Valid NewDepartment payload, BindingResult bindingResult) {
@@ -58,6 +63,13 @@ public class WebService {
         }
     }
 
+    // http://localhost:8080/offices/add
+    //{
+    //    "officeNo": 100,
+    //    "maxOccupancy": 10,
+    //    "currOccupancy": 9,
+    //    "departmentTitle": "Test"
+    //}
     @PostMapping("/offices/add")
     @ResponseStatus(HttpStatus.CREATED)
     public OfficeDto addOffice(@RequestBody @Valid NewOffice payload, BindingResult bindingResult) {
@@ -79,6 +91,10 @@ public class WebService {
         }
     }
 
+    // http://localhost:8080/offices/101/move
+    //{
+    //    "departmentTitle": "Construction"
+    //}
     @PatchMapping("/offices/{officeNo}/move")
     public OfficeDto moveOffice(@PathVariable("officeNo") int officeNo, @Valid @RequestBody MoveOffice payload, BindingResult bindingResult){
         if (bindingResult.hasErrors())
@@ -93,6 +109,10 @@ public class WebService {
         }
     }
 
+    // http://localhost:8080/offices/101/occupancy
+    //{
+    //    "currOccupancy": 0
+    //}
     @PatchMapping("/offices/{officeNo}/occupancy")
     public OfficeDto updateOfficeOccupancy(@PathVariable("officeNo") int officeNo, @Valid @RequestBody UpdateOfficeOccupancy payload, BindingResult bindingResult){
         if (bindingResult.hasErrors())
@@ -106,7 +126,7 @@ public class WebService {
         }
     }
 
-    // http://localhost:8080/departments/CompSci
+    // http://localhost:8080/departments/Computer%20Science
     @GetMapping("/departments/{title}")
     public DepartmentDto getADepartmentByTitle(@PathVariable("title") String title) {
         Optional<Department> departmentOptional = departmentRepo.findById(title);
@@ -114,7 +134,7 @@ public class WebService {
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Department with title " + title + " could not be found.");
     }
 
-    // http://localhost:8080/departments/CompSci/offices
+    // http://localhost:8080/departments/Computer%20Science/offices
     @GetMapping("/departments/{title}/offices")
     public CollectionModel<OfficeDto> getOfficesInDepartment(@PathVariable("title") String title) {
         if (departmentRepo.existsById(title))
@@ -122,7 +142,7 @@ public class WebService {
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Department with title " + title + " could not be found.");
     }
 
-    // http://localhost:8080/offices/120
+    // http://localhost:8080/offices/101
     @GetMapping("/offices/{officeNo}")
     public OfficeDto getAOfficeByOfficeNo(@PathVariable("officeNo") int officeNo) {
         Optional<Office> officeOptional = officeRepo.findById(officeNo);
@@ -130,16 +150,19 @@ public class WebService {
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Office with officeNo " + officeNo + " could not be found.");
     }
 
+    // http://localhost:8080/offices/free
     @GetMapping("/offices/free")
     public CollectionModel<OfficeDto> getOfficesByEmpty() {
         return officeDtoMapper.toCollectionModel(officeRepo.findAllEmptyOffices());
     }
 
+    // http://localhost:8080/offices/notfull
     @GetMapping("/offices/notfull")
     public CollectionModel<OfficeDto> getOfficesByNotFull() {
         return officeDtoMapper.toCollectionModel(officeRepo.findAllNotFullOffices());
     }
 
+    // http://localhost:8080/departments/Construction/delete
     @DeleteMapping("/departments/{title}/delete")
     void deleteDepartmentByTitle(@PathVariable("title") String title) {
         try {
@@ -148,6 +171,8 @@ public class WebService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Department with title " + title + " could not be found.");
         }
     }
+
+    // http://localhost:8080/offices/102/delete
     @DeleteMapping("/offices/{officeNo}/delete")
     void deleteOfficeByOfficeNo(@PathVariable("officeNo") int officeNo) {
         try {
