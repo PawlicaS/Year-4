@@ -69,6 +69,30 @@ class MainAppTests {
 				.andExpect(status().isNotFound());
 	}
 
+
+	@Test
+	@SneakyThrows
+	@WithMockUser(roles="HOS")
+	void deleteOfficeOkAndHOS() {
+		mockMvc.perform(MockMvcRequestBuilders.delete("/offices/121/delete"))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	@SneakyThrows
+	@WithMockUser(roles="HOS")
+	void deleteOfficeNotExist() {
+		mockMvc.perform(MockMvcRequestBuilders.delete("/offices/125/delete"))
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	@SneakyThrows
+	void deleteOfficeNoUser() {
+		mockMvc.perform(MockMvcRequestBuilders.delete("/offices/121/delete"))
+				.andExpect(status().isUnauthorized());
+	}
+
 	@Test
 	@SneakyThrows
 	@WithMockUser(roles="HOS")
