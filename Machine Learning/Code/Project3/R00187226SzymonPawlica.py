@@ -1,7 +1,7 @@
 """
 Author: Szymon Pawlica
 
-Title: Machine Learning Assignment 3: Regression & optimisation
+Title: Machine Learning Assignment 3: Regression & Optimisation
 """
 
 import pandas as pd
@@ -94,8 +94,7 @@ def linearize(deg, data, p0):
 def calculate_update(y, f0, J):
     l = 1e-2
 
-    # Regularisation happens here, it's calculated by adding a small parameter update "l",
-    # it slows down convergence and ensures matrix N can be inverted
+    # Regularisation happens here, it's calculated by adding a small parameter update "l", it slows down convergence and ensures matrix N can be inverted
     N = np.matmul(J.T, J) + l * np.eye(J.shape[1])
 
     # Residual vector is the target vector and the model function output
@@ -106,12 +105,12 @@ def calculate_update(y, f0, J):
 
 
 def regression(deg, data, target):
-    max_iter = 10
+    max_iter = 10 # Max iterations can be determined after reaching the local minimum as updates after that are very small
 
     # Parameter vector
     p0 = np.zeros(num_coefficients_8(deg))
 
-    # The parameter vector is updated
+    # The parameter update and residuals calculated become smaller and smaller, and the parameter vector is updated
     for i in range(max_iter):
         f0, J = linearize(deg, data, p0)
         dp = calculate_update(target, f0, J)
@@ -132,12 +131,10 @@ def main():
     cooling_load_absolute_difference_per_degree = []
 
     for degree_of_polynomial in range(0, 3):
-        split = 0
 
         heating_load_absolute_differences_for_all_folds = []
         cooling_load_absolute_differences_for_all_folds = []
         for train_index, test_index in kf.split(dataset):
-            split += 1
 
             # Get train data
             train_features = features[train_index]
@@ -157,16 +154,14 @@ def main():
             cooling_load_predicted_testing = calculate_model_function(degree_of_polynomial, test_features, p1)
 
             # Find the absolute difference between the predicted load and actual load
-            heating_load_absolute_difference = np.absolute(
-                heating_load_predicted_testing - heating_load_test_target.astype('float64'))
-            absolute_difference_cooling_load = np.absolute(
-                cooling_load_predicted_testing - cooling_load_test_target.astype('float64'))
+            heating_load_absolute_difference = np.absolute(heating_load_predicted_testing - heating_load_test_target)
+            cooling_load_absolute_difference = np.absolute(cooling_load_predicted_testing - cooling_load_test_target)
 
             # Find the absolute difference
             heating_load_absolute_differences_for_all_folds = np.concatenate(
                 (heating_load_absolute_differences_for_all_folds, heating_load_absolute_difference), axis=0)
             cooling_load_absolute_differences_for_all_folds = np.concatenate(
-                (cooling_load_absolute_differences_for_all_folds, absolute_difference_cooling_load), axis=0)
+                (cooling_load_absolute_differences_for_all_folds, cooling_load_absolute_difference), axis=0)
 
         # Find the mean absolute difference for each degree
         heating_load_absolute_difference_per_degree.append(np.mean(heating_load_absolute_differences_for_all_folds))
@@ -178,6 +173,9 @@ def main():
     cooling_load_best_degree = cooling_load_absolute_difference_per_degree.index(
         min(cooling_load_absolute_difference_per_degree))
 
+    print(f"Mean absolute difference between estimated Heating Loads {heating_load_absolute_difference_per_degree}")
+    print(f"Mean absolute difference between estimated Cooling Loads {cooling_load_absolute_difference_per_degree}")
+
     print(f"Best Degree for Heating Loads: {heating_load_best_degree}")
     print(f"Best Degree for Cooling Loads: {cooling_load_best_degree}")
 
@@ -187,21 +185,18 @@ def main():
     heating_load_best_degree_predicted = calculate_model_function(heating_load_best_degree, features, p0)
     cooling_load_best_degree_predicted = calculate_model_function(cooling_load_best_degree, features, p1)
 
-    print(f"Mean absolute difference between estimated Heating Loads {heating_load_absolute_difference_per_degree}")
-    print(f"Mean absolute difference between estimated Cooling Loads {cooling_load_absolute_difference_per_degree}")
-
     # Plot Actual and Predicted Loads
     plt.figure()
-    plt.scatter(heating_load_best_degree_predicted, heating_target, color='orange')
-    plt.plot([min(heating_target), max(heating_target)], [min(heating_target), max(heating_target)], color='red')
-    plt.xlabel("Predicted Heating Loads")
-    plt.ylabel("Actual Heating Loads")
+    plt.title('Heating Loads')
+    plt.scatter(heating_load_best_degree_predicted, heating_target, color='orange', label='Predicted')
+    plt.plot([min(heating_target), max(heating_target)], [min(heating_target), max(heating_target)], color='red', label='True')
+    plt.legend()
 
     plt.figure()
-    plt.scatter(cooling_load_best_degree_predicted, cooling_target, color='cyan')
-    plt.plot([min(cooling_target), max(cooling_target)], [min(cooling_target), max(cooling_target)], color='blue')
-    plt.xlabel("Predicted Cooling Loads")
-    plt.ylabel("Actual Cooling Loads")
+    plt.title('Cooling Loads')
+    plt.scatter(cooling_load_best_degree_predicted, cooling_target, color='cyan', label='Predicted')
+    plt.plot([min(cooling_target), max(cooling_target)], [min(cooling_target), max(cooling_target)], color='blue', label='True')
+    plt.legend()
 
     plt.show()
 
