@@ -1,15 +1,15 @@
 go.property("dir", vmath.vector3())
 
 function init(self)
-	self.speed = 200
-	self.life = 1
+	self.speed = 1000
 end
 
-local function explode(self)
+local function hit(self)
 	self.life = 1000
-	go.set_rotation(vmath.quat())
 	self.speed = 0
-	msg.post("#sprite", "play_animation", { id = hash("explosion") })
+	-- Need animation for shrapnel
+	go.set_rotation(vmath.quat())
+	msg.post("#sprite", "play_animation", { id = hash("death") })
 end
 
 function update(self, dt)
@@ -17,18 +17,22 @@ function update(self, dt)
 	pos = pos + self.dir * self.speed * dt
 	go.set_position(pos)
 
-	self.life = self.life - dt
-	if self.life < 0 then
-		explode(self)
+	if pos.y > 768 then
+		go.delete()
+	elseif pos.y < 0 then
+		go.delete()
+	elseif pos.x > 1280 then
+		go.delete()
+	elseif pos.x < 0 then
+		go.delete()
 	end
 end
 
 function on_message(self, message_id, message, sender)
 	if message_id == hash("animation_done") then
 		go.delete()
-	elseif message_id == hash("collision_response") then
-		explode(self)
+	elseif message_id == hash("contact_point_response") then
+		hit(self)
 		go.delete(message.other_id)
-		msg.post("/gui#ui", "add_score", {score = 100})
 	end
 end
