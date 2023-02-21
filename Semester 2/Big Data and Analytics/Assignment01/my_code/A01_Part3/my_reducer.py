@@ -33,7 +33,7 @@ def my_reduce(my_input_stream, my_output_stream, my_reducer_input_parameters):
     output_data = dict()
 
     for row in my_input_stream:
-        row = row.translate(str.maketrans('()\n', '   ')).replace('\t', ','). replace(' '*2, ' ')
+        row = row.replace(' \t (', ',').replace(') \n', '')
         processed_data.append(row.split(','))
 
     for item in processed_data:
