@@ -1,37 +1,63 @@
-import React, { Component } from 'react'
-import * as d3 from 'd3'
+import React, { useRef, useEffect } from 'react';
+import * as d3 from 'd3';
 
-class LineGraph extends Component {
-    componentDidMount() {
-        this.drawChart();
-    }
-    drawChart() {
-        const data = [12, 5, 6, 6, 9, 10];
+const LineGraph = ({data}) => {
+  const graphRef = useRef(null);
 
-        const svg = d3.select("body")
-                    .append("svg")
-                    .attr("width", 700)
-                    .attr("height", 300);
+  useEffect(() => {
+    d3.select("svg").remove();
+    const margin = { top: 20, right: 20, bottom: 30, left: 50 };
+    const width = 600 - margin.left - margin.right;
+    const height = 400 - margin.top - margin.bottom;
 
-        svg.selectAll("rect")
-            .data(data)
-            .enter()
-            .append("rect")
-            .attr("x", (d, i) => i * 70)
-            .attr("y", (d, i) => 300 - 10 * d)
-            .attr("width", 65)
-            .attr("height", (d, i) => d * 10)
-            .attr("fill", "green");
-        svg.selectAll("text")
-            .data(data)
-            .enter()
-            .append("text")
-            .text((d) => d)
-            .attr("x", (d, i) => i * 70)
-            .attr("y", (d, i) => 300 - (10 * d) - 3)
-    }
-    render() {
-        return <div id={"#" + this.props.id}></div>
-    }
-}
+    const x = d3.scaleTime()
+      .range([0, width])
+      .domain(d3.extent(data, d => d.date));
+
+    const y = d3.scaleLinear()
+      .range([height, 0])
+      .domain([0, d3.max(data, d => Math.max(d.value1, d.value2))]);
+
+    const line1 = d3.line()
+      .x(d => x(d.date))
+      .y(d => y(d.value1));
+
+    const line2 = d3.line()
+      .x(d => x(d.date))
+      .y(d => y(d.value2));
+
+    const svg = d3.select(graphRef.current)
+      .append('svg')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom)
+      .append('g')
+        .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+    svg.append('g')
+        .attr('transform', `translate(0, ${height})`)
+        .call(d3.axisBottom(x));
+
+    svg.append('g')
+        .call(d3.axisLeft(y));
+
+    svg.append('path')
+        .datum(data)
+        .attr('fill', 'none')
+        .attr('stroke', 'steelblue')
+        .attr('stroke-width', 1.5)
+        .attr('d', line1);
+
+    svg.append('path')
+        .datum(data)
+        .attr('fill', 'none')
+        .attr('stroke', 'orange')
+        .attr('stroke-width', 1.5)
+        .attr('d', line2);
+  }, [data]);
+
+  return (
+    <div ref={graphRef}></div>
+  );
+};
+
 export default LineGraph;
