@@ -115,7 +115,7 @@ def my_main(part,
 # ---------------------------------------------------------------
 if __name__ == '__main__':
     # 1. We get the input values
-    part_number = 3
+    part_number = 4
     assignment_solution_folder = "./Assignment_Solutions/A01_Part" + str(part_number) + "/"
     student_solution_folder = "./Student_Solutions/A01_Part" + str(part_number) + "/"
 

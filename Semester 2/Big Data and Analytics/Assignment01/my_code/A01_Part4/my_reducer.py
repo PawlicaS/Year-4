@@ -31,8 +31,7 @@ def my_reduce(my_input_stream, my_output_stream, my_reducer_input_parameters):
     processed_data, truck_data, truck_data_pairs, output_data = [], [], [], []
 
     for row in my_input_stream:
-        row = row[:-2]
-        row = row[12:].replace('(', '').replace(')', '')
+        row = row.replace('universal \t (', '').replace(') \n', '')
         processed_data.append(row.split(' @ '))
 
     for item in processed_data:
