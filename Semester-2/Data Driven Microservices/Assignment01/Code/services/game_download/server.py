@@ -5,13 +5,15 @@ import game_download_pb2
 import game_download_pb2_grpc
 
 
-class GameDownload(game_download_pb2_grpc.Game_Download):
-    def GetDownloadLink(self, request, context):
+class GameDownload(game_download_pb2_grpc.GameDownload):
+    def DownloadLink(self, request, context):
         db = TinyDB('db.json')
         game = Query()
+        download_key = int(request.download_key)
+        print(db.search(game.key == download_key))
 
-        if db.search(game.key == request.download_key):
-            result = db.get(game.key == request.download_key)
+        if db.search(game.key == download_key):
+            result = db.get(game.key == download_key)
             game_name = result.get('name')
             print("Downloading: ", request.download_key)
 
@@ -23,8 +25,8 @@ class GameDownload(game_download_pb2_grpc.Game_Download):
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    game_download_pb2_grpc.add_Game_DownloadServicer_to_server(GameDownload(), server)
-    server.add_insecure_port('[::]:50051')
+    game_download_pb2_grpc.add_GameDownloadServicer_to_server(GameDownload(), server)
+    server.add_insecure_port('[::]:50053')
     server.start()
     server.wait_for_termination()
 

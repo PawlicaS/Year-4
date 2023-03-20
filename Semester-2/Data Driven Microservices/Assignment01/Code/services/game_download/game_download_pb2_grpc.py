@@ -14,8 +14,8 @@ class GameDownloadStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.GetDownloadLink = channel.unary_unary(
-                '/game_download.GameDownload/GetDownloadLink',
+        self.DownloadLink = channel.unary_unary(
+                '/game_download.GameDownload/DownloadLink',
                 request_serializer=game__download__pb2.LinkRequest.SerializeToString,
                 response_deserializer=game__download__pb2.LinkResponse.FromString,
                 )
@@ -24,7 +24,7 @@ class GameDownloadStub(object):
 class GameDownloadServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def GetDownloadLink(self, request, context):
+    def DownloadLink(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -33,8 +33,8 @@ class GameDownloadServicer(object):
 
 def add_GameDownloadServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'GetDownloadLink': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetDownloadLink,
+            'DownloadLink': grpc.unary_unary_rpc_method_handler(
+                    servicer.DownloadLink,
                     request_deserializer=game__download__pb2.LinkRequest.FromString,
                     response_serializer=game__download__pb2.LinkResponse.SerializeToString,
             ),
@@ -49,7 +49,7 @@ class GameDownload(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def GetDownloadLink(request,
+    def DownloadLink(request,
             target,
             options=(),
             channel_credentials=None,
@@ -59,7 +59,7 @@ class GameDownload(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/game_download.GameDownload/GetDownloadLink',
+        return grpc.experimental.unary_unary(request, target, '/game_download.GameDownload/DownloadLink',
             game__download__pb2.LinkRequest.SerializeToString,
             game__download__pb2.LinkResponse.FromString,
             options, channel_credentials,

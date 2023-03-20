@@ -2,10 +2,10 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import achievements_pb2 as achievements__pb2
+import purchase_auth_pb2 as purchase__auth__pb2
 
 
-class AchievementsStub(object):
+class PurchaseStub(object):
     """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
@@ -14,42 +14,42 @@ class AchievementsStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.UpdateAchievements = channel.unary_unary(
-                '/achievements.Achievements/UpdateAchievements',
-                request_serializer=achievements__pb2.UpdateAchievementRequest.SerializeToString,
-                response_deserializer=achievements__pb2.UpdateAchievementResponse.FromString,
+        self.AuthorisePurchase = channel.unary_unary(
+                '/purchasing.Purchase/AuthorisePurchase',
+                request_serializer=purchase__auth__pb2.PurchaseRequest.SerializeToString,
+                response_deserializer=purchase__auth__pb2.PurchaseResponse.FromString,
                 )
 
 
-class AchievementsServicer(object):
+class PurchaseServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def UpdateAchievements(self, request, context):
+    def AuthorisePurchase(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
 
-def add_AchievementsServicer_to_server(servicer, server):
+def add_PurchaseServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'UpdateAchievements': grpc.unary_unary_rpc_method_handler(
-                    servicer.UpdateAchievements,
-                    request_deserializer=achievements__pb2.UpdateAchievementRequest.FromString,
-                    response_serializer=achievements__pb2.UpdateAchievementResponse.SerializeToString,
+            'AuthorisePurchase': grpc.unary_unary_rpc_method_handler(
+                    servicer.AuthorisePurchase,
+                    request_deserializer=purchase__auth__pb2.PurchaseRequest.FromString,
+                    response_serializer=purchase__auth__pb2.PurchaseResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'achievements.Achievements', rpc_method_handlers)
+            'purchasing.Purchase', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
  # This class is part of an EXPERIMENTAL API.
-class Achievements(object):
+class Purchase(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def UpdateAchievements(request,
+    def AuthorisePurchase(request,
             target,
             options=(),
             channel_credentials=None,
@@ -59,8 +59,8 @@ class Achievements(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/achievements.Achievements/UpdateAchievements',
-            achievements__pb2.UpdateAchievementRequest.SerializeToString,
-            achievements__pb2.UpdateAchievementResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/purchasing.Purchase/AuthorisePurchase',
+            purchase__auth__pb2.PurchaseRequest.SerializeToString,
+            purchase__auth__pb2.PurchaseResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

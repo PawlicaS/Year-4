@@ -3,7 +3,7 @@ syntax = "proto3";
 package game_download;
 
 service GameDownload {
-    rpc GetDownloadLink (LinkRequest) returns (LinkResponse) {}
+    rpc DownloadLink (LinkRequest) returns (LinkResponse) {}
 }
 
 message LinkRequest {

@@ -17,6 +17,7 @@ class Register(registration_pb2_grpc.Register):
             return registration_pb2.RegisterUserResponse(message="Account successfully registered.")
 
         else:
+            print("Failed To Register Account: ", request.email)
             return registration_pb2.RegisterUserResponse(message="Account with email already exists.")
 
 
