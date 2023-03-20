@@ -1,12 +1,17 @@
-import random
 
-i = 1
-count = 0
+from tinydb import TinyDB, Query, where
 
-while i < 1000:
-    j = random.randint(1, 100)
-    if j >= 80:
-        count += 1
-    i += 1
+# fp = open('db.json', 'x')
+# fp.close()
+db = TinyDB('db.json')
+user = Query()
 
-print(count)
+db.insert({'int': 1, 'char': 'a'})
+db.insert({'int': 1, 'char': 'b'})
+char = 'asdfb'
+print(db.search(user.char == 'a'))
+print(db.get(user.char == 'v'))
+result = db.get(user.char == 'b')
+print(result.get('int'))
+if not db.search(user.char == char):
+    print('asdf')

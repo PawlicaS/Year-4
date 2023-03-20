@@ -7,4 +7,11 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
+  <component name="PyNamespacePackagesService">
+    <option name="namespacePackageFolders">
+      <list>
+        <option value="$MODULE_DIR$/Semester-2/Data Driven Microservices/Assignment01/Code/proto_files" />
+      </list>
+    </option>
+  </component>
 </module>

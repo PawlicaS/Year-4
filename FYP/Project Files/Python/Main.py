@@ -21,8 +21,8 @@ from sklearn.tree import DecisionTreeClassifier
 from torch.utils.data import Dataset
 from transformers import TrainingArguments, Trainer, DistilBertForSequenceClassification, AutoTokenizer
 
-DEFAULT_FILE = "../articles1.csv"
-FILE = "../articles1.csv"  # Change to passed in arg
+DEFAULT_FILE = "../Data/articles1.csv"
+FILE = "../Data/articles1.csv"  # Change to passed in arg
 
 
 def check_file():

@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package game_download;
+
+service GameDownload {
+    rpc GetDownloadLink (LinkRequest) returns (LinkResponse) {}
+}
+
+message LinkRequest {
+    string download_key = 1;
+}
+
+message LinkResponse {
+    string message = 1;
+}
