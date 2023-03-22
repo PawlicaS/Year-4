@@ -1,0 +1,5 @@
+grpcio
+googleapis-common-protos
+tinydb
+pika
+typing_extensions

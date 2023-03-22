@@ -30,6 +30,11 @@ def run():
             registration_pb2.RegisterUserRequest(email='testemail4@mail.com', password=password))
         print(response.message)
 
+        password = bcrypt.hashpw('123456'.encode(), bcrypt.gensalt()).decode()
+        response = stub.RegisterUser(
+            registration_pb2.RegisterUserRequest(email='testemail4@mail.com', password=password))
+        print(response.message)
+
     with grpc.insecure_channel('localhost:50052') as channel:
         stub = purchase_auth_pb2_grpc.PurchaseStub(channel)
         response = stub.AuthorisePurchase(

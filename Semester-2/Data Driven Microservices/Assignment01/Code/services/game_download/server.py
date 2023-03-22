@@ -10,12 +10,11 @@ class GameDownload(game_download_pb2_grpc.GameDownload):
         db = TinyDB('db.json')
         game = Query()
         download_key = int(request.download_key)
-        print(db.search(game.key == download_key))
 
         if db.search(game.key == download_key):
             result = db.get(game.key == download_key)
             game_name = result.get('name')
-            print("Downloading: ", request.download_key)
+            print("Available for download: ", game_name)
 
             return game_download_pb2.LinkResponse(message=f"{game_name} available for download.")
 
