@@ -3,6 +3,8 @@ Author: Szymon Pawlica
 
 Identification of anonymous authors using textual analysis and machine learning
 """
+import os
+import time
 import warnings
 
 import pandas as pd
@@ -12,6 +14,7 @@ import re
 import xgboost as xgb
 
 from datasets import load_metric
+from matplotlib import pyplot as plt
 from sklearn import model_selection
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
@@ -30,14 +33,17 @@ warnings.filterwarnings("ignore")
 DEFAULT_FILE = "../Data/articles1.csv"
 FILE = "../Data/articles1.csv"  # Change to passed in arg
 
+
 def check_file():
+    print("=============================\n"
+          "Finding Dataset")
     try:
-        print("Reading in passed dataset")
+        print("Reading in passed dataset\n")
         df = pd.read_csv(FILE)
     except FileNotFoundError:
         default_df = input("Dataset not found, continue with default dataset?\n")
         if default_df == "y":
-            print("Reading in default dataset")
+            print("Reading in default dataset\n")
             df = pd.read_csv(DEFAULT_FILE)
         else:
             exit(0)
@@ -45,9 +51,12 @@ def check_file():
 
 
 def prepocessing(data):
+    print("=============================\n"
+          "Preprocessing Data")
+    st = time.time()
     df = data[['author', 'content']]
     df = df.dropna()
-    df = df.groupby('author').filter(lambda x: len(x) >= 250)
+    df = df.groupby('author').filter(lambda x: len(x) >= 500)
     df['author'] = df['author'].apply(lambda x: x.lower())
     df['author'] = df['author'].apply(lambda x: re.sub('[^a-zA-Z0-9\s]', '', x))
     df['author'] = df['author'].apply(lambda x: re.sub('\s+', ' ', x))
@@ -68,6 +77,10 @@ def prepocessing(data):
 
     x_train, x_test, y_train, y_test = train_test_split(features, labels, test_size=0.2, random_state=42)
 
+    et = time.time()
+    tt = et - st
+    print("Finished Preprocessing\n"
+          f"Took {tt:.3f}s")
     return x_train, x_test, y_train, y_test
 
 
@@ -94,83 +107,98 @@ def compute_metrics(eval_pred):
     return metric.compute(predictions=predictions, references=labels)
 
 
-def naive_bayes(x_train, x_test, y_train, y_test):
-    nb = MultinomialNB()
-    nb.fit(x_train, y_train)
-    y_pred = nb.predict(x_test)
-
-    accuracy = accuracy_score(y_test, y_pred)
-    return "NB Accuracy:", accuracy
-
-
-def decision_tree(x_train, x_test, y_train, y_test):
-    dt = DecisionTreeClassifier()
-    dt.fit(x_train, y_train)
-    y_pred = dt.predict(x_test)
-
-    accuracy = accuracy_score(y_test, y_pred)
-    return "DT Accuracy:", accuracy
-
-
-def svm(x_train, x_test, y_train, y_test):
-    svm = SVC(kernel='linear', C=1, random_state=None)
-    svm.fit(x_train, y_train)
-    y_pred = svm.predict(x_test)
-
-    accuracy = accuracy_score(y_test, y_pred)
-    return "SVM Accuracy:", accuracy
-
-
 def random_forest(x_train, x_test, y_train, y_test):
-    rf = RandomForestClassifier(n_estimators=100, bootstrap=True, criterion='gini', min_samples_leaf=1, min_samples_split=2, random_state=None)
+    print("=============================\n"
+          "Running Random Forest")
+    st = time.time()
+    rf = RandomForestClassifier(n_estimators=100, bootstrap=True, criterion='gini', min_samples_leaf=1,
+                                min_samples_split=2, random_state=None)
     rf.fit(x_train, y_train)
     y_pred = rf.predict(x_test)
 
     accuracy = accuracy_score(y_test, y_pred)
-    return "RF Accuracy:", accuracy
+    et = time.time()
+    tt = et - st
+    print("-Finished\n"
+          f"Took {tt:.3f}s")
+    return "Random Forest", accuracy
 
 
 def xgboost(x_train, x_test, y_train, y_test):
+    print("=============================\n"
+          "Running XGBoost")
+    st = time.time()
     xg = xgb.XGBClassifier(reg_lambda=1, reg_alpha=0.5)
     xg.fit(x_train, y_train)
     y_pred = xg.predict(x_test)
 
     accuracy = accuracy_score(y_test, y_pred)
-    return "XGB Accuracy:", accuracy
+    et = time.time()
+    tt = et - st
+    print("-Finished\n"
+          f"Took {tt:.3f}s")
+    return "XGBoost", accuracy
 
 
 def multilayer_perceptron(x_train, x_test, y_train, y_test):
-    mlp = MLPClassifier(activation='relu', solver='adam', alpha=0.0001, max_iter=200, shuffle=True, verbose=False, random_state=None)
+    print("=============================\n"
+          "Running Multilayer Perceptron")
+    st = time.time()
+    mlp = MLPClassifier(activation='relu', solver='adam', alpha=0.0001, max_iter=200, shuffle=True, verbose=False,
+                        random_state=None)
     mlp.fit(x_train, y_train)
     y_pred = mlp.predict(x_test)
 
     accuracy = accuracy_score(y_test, y_pred)
-    return "MLP Accuracy:", accuracy
+    et = time.time()
+    tt = et - st
+    print("-Finished\n"
+          f"Took {tt:.3f}s")
+    return "Multilayer Perceptron", accuracy
 
 
 def logistic_regression(x_train, x_test, y_train, y_test):
+    print("=============================\n"
+          "Running Logistic Regression")
+    st = time.time()
     lr = LogisticRegression(verbose=0, max_iter=100, solver='lbfgs', C=1.0, penalty='l2', random_state=None)
     lr.fit(x_train, y_train)
     y_pred = lr.predict(x_test)
 
     accuracy = accuracy_score(y_test, y_pred)
-    return "LR Accuracy:", accuracy
+    et = time.time()
+    tt = et - st
+    print("-Finished\n"
+          f"Took {tt:.3f}s")
+    return "Logistic Regression", accuracy
 
 
 def ensemble(x_train, x_test, y_train, y_test):
-    model1 = RandomForestClassifier(n_estimators=100, bootstrap=True, criterion='gini', min_samples_leaf=1, min_samples_split=2, random_state=None)
+    print("=============================\n"
+          "Running Ensemble")
+    st = time.time()
+    model1 = RandomForestClassifier(n_estimators=100, bootstrap=True, criterion='gini', min_samples_leaf=1,
+                                    min_samples_split=2, random_state=None)
     model2 = xgb.XGBClassifier(reg_lambda=1, reg_alpha=0.5)
-    model3 = MLPClassifier(activation='relu', solver='adam', alpha=0.0001, max_iter=200, shuffle=True, verbose=False, random_state=None)
+    model3 = MLPClassifier(activation='relu', solver='adam', alpha=0.0001, max_iter=200, shuffle=True, verbose=False,
+                           random_state=None)
 
     ensemble = VotingClassifier(estimators=[('rf', model1), ('xg', model2), ('mlp', model3)], voting='hard')
     ensemble.fit(x_train, y_train)
     y_pred = ensemble.predict(x_test)
 
     accuracy = accuracy_score(y_test, y_pred)
-    return "ensemble Accuracy:", accuracy
+    et = time.time()
+    tt = et - st
+    print("-Finished\n"
+          f"Took {tt:.3f}s")
+    return "Ensemble", accuracy
 
 
 def distilbert(data):
+    print("=============================\n"
+          "Running DistilBERT")
+    st = time.time()
     df = data[['author', 'content']]
     df = df.dropna()
     df = df.groupby('author').filter(lambda x: len(x) >= 250)
@@ -208,8 +236,8 @@ def distilbert(data):
     args = TrainingArguments(
         output_dir='./results',  # output directory
         num_train_epochs=3,  # total number of training epochs
-        per_device_train_batch_size=80,  # batch size per device during training
-        per_device_eval_batch_size=80,  # batch size for evaluation
+        per_device_train_batch_size=16,  # batch size per device during training
+        per_device_eval_batch_size=16,  # batch size for evaluation
         learning_rate=5e-05,
         eval_accumulation_steps=4,
         gradient_accumulation_steps=4,
@@ -228,11 +256,35 @@ def distilbert(data):
     trainer.train()
     trainer.evaluate(test_dataset)
     pred = trainer.predict(test_dataset)
-    return "DistilBERT Accuracy:", pred.metrics['test_accuracy']
+    et = time.time()
+    tt = et - st
+    print("-Finished\n"
+          f"Took {tt:.3f}s")
+    return "DistilBERT", pred.metrics['test_accuracy']
 
 
 def data_fusion():
     return 0
+
+
+def save_data(accuracies):
+    with open('results.txt', 'w') as file:
+        for i in accuracies:
+            file.write(i)
+
+
+def plot(accuracies):
+    print("Plotting Graph")
+    algorithms = accuracies.keys()
+    accuracy_values = accuracies.values()
+
+    plt.bar(algorithms, accuracy_values)
+
+    plt.title('Accuracy Comparison')
+    plt.xlabel('Algorithm')
+    plt.ylabel('Accuracy %')
+
+    plt.show()
 
 
 def main():
@@ -241,24 +293,25 @@ def main():
     accuracies = {}
 
     x, y = random_forest(x_train, x_test, y_train, y_test)
-    accuracies[x] = y
+    accuracies[x] = y * 100
 
     x, y = xgboost(x_train, x_test, y_train, y_test)
-    accuracies[x] = y
+    accuracies[x] = y * 100
 
     x, y = multilayer_perceptron(x_train, x_test, y_train, y_test)
-    accuracies[x] = y
+    accuracies[x] = y * 100
 
     x, y = logistic_regression(x_train, x_test, y_train, y_test)
-    accuracies[x] = y
+    accuracies[x] = y * 100
 
     x, y = ensemble(x_train, x_test, y_train, y_test)
-    accuracies[x] = y
+    accuracies[x] = y * 100
 
     x, y = distilbert(data)
-    accuracies[x] = y
+    accuracies[x] = y * 100
 
-    print(accuracies)
+    save_data(accuracies)
+    plot(accuracies)
 
     # naive_bayes(x_train, x_test, y_train, y_test)
     # decision_tree(x_train, x_test, y_train, y_test)

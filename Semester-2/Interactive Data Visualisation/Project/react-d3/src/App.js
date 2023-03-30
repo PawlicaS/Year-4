@@ -14,7 +14,7 @@ const App = () => {
     return () => undefined;
   }, []);
   return (
-    <div className="App-container">
+    <div className="App">
       {loading && <div>loading</div>}
       {!loading && <LineGraph data={data} />}
     </div>
