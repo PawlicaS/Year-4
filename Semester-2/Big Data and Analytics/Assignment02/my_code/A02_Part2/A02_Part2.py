@@ -22,6 +22,7 @@
 import pyspark
 import pyspark.sql.functions
 
+
 # ------------------------------------------
 # FUNCTION my_main
 # ------------------------------------------
@@ -59,11 +60,15 @@ def my_main(spark, my_dataset_dir):
     # ------------------------------------------------
 
     # Type all your code here. Use auxiliary functions if needed.
-    pass
+    # Row(station, num_departure_trips, num_arrival_trips)
+    f = pyspark.sql.functions
+    start_stations = inputDF.groupBy('start_station_name').agg(f.count('start_station_name').alias('num_departure_trips'))\
+        .withColumnRenamed("start_station_name", 'station')
+    stop_stations = inputDF.groupBy('stop_station_name').agg(f.count('stop_station_name').alias('num_arrival_trips'))\
+        .withColumnRenamed('stop_station_name', 'station')
 
-
-
-
+    solutionDF = start_stations.join(stop_stations, 'station', 'outer')
+    solutionDF = solutionDF.orderBy(solutionDF['station']).fillna(0)
 
     # ------------------------------------------------
     # END OF YOUR CODE
@@ -71,8 +76,11 @@ def my_main(spark, my_dataset_dir):
 
     # Operation A1: 'collect' to get all results
     resVAL = solutionDF.collect()
-    for item in resVAL:
-        print(item)
+    with open('../../my_results/Student_Solutions/A02_Part2/result.txt', 'w') as file:
+        for item in resVAL:
+            print(item)
+            file.write(str(item)+'\n')
+
 
 # --------------------------------------------------------
 #
@@ -97,7 +105,7 @@ if __name__ == '__main__':
 
     # 3. We set the path to my_dataset and my_result
     my_dataset_dir = "../../my_datasets/my_dataset/"
-    my_dataset_dir = "../../my_datasets/my_streaming_dataset/file4.csv"
+    # my_dataset_dir = "../../my_datasets/my_streaming_dataset/file4.csv"
 
     if local_False_databricks_True == True:
         my_dataset_dir = "/FileStore/tables/Assignments/NYC/my_dataset/"
@@ -108,4 +116,3 @@ if __name__ == '__main__':
 
     # 5. We call to our main function
     my_main(spark, my_dataset_dir)
-

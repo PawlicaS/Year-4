@@ -22,6 +22,7 @@
 import pyspark
 import pyspark.sql.functions
 
+
 # ------------------------------------------
 # FUNCTION my_main
 # ------------------------------------------
@@ -59,12 +60,12 @@ def my_main(spark, my_dataset_dir, top_n_bikes):
     # ------------------------------------------------
 
     # Type all your code here. Use auxiliary functions if needed.
-    for i in inputDF.collect():
-        print(i)
-
-
-
-
+    # Row(bike_id, totalTime, numTrips)
+    f = pyspark.sql.functions
+    solutionDF = inputDF.groupBy('bike_id') \
+        .agg(f.sum('trip_duration').alias('totalTime'),
+             f.count('bike_id').alias('numTrips')) \
+        .orderBy('totalTime', ascending=False).limit(top_n_bikes)
 
     # ------------------------------------------------
     # END OF YOUR CODE
@@ -72,8 +73,11 @@ def my_main(spark, my_dataset_dir, top_n_bikes):
 
     # Operation A1: 'collect' to get all results
     resVAL = solutionDF.collect()
-    for item in resVAL:
-        print(item)
+    with open('../../my_results/Student_Solutions/A02_Part1/result.txt', 'w') as file:
+        for item in resVAL:
+            print(item)
+            file.write(str(item)+'\n')
+
 
 # --------------------------------------------------------
 #
@@ -107,4 +111,3 @@ if __name__ == '__main__':
 
     # 5. We call to our main function
     my_main(spark, my_dataset_dir, top_n_bikes)
-

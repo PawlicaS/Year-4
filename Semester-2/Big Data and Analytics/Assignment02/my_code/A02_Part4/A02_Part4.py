@@ -36,8 +36,7 @@ def my_model(spark,
              checkpoint_dir,
              time_step_interval,
              min_trips
-            ):
-
+             ):
     # 1. We create the DataStreamWritter
     myDSW = None
 
@@ -68,33 +67,36 @@ def my_model(spark,
 
     # 3.2. We use it when loading the dataset
     inputSDF = spark.readStream.format("csv") \
-                               .option("delimiter", ",") \
-                               .option("quote", "") \
-                               .option("header", "false") \
-                               .schema(my_schema) \
-                               .load(monitoring_dir)
+        .option("delimiter", ",") \
+        .option("quote", "") \
+        .option("header", "false") \
+        .schema(my_schema) \
+        .load(monitoring_dir)
 
     # ------------------------------------------------
     # START OF YOUR CODE:
     # ------------------------------------------------
 
     # Type all your code here. Use auxiliary functions if needed.
-    pass
+    f = pyspark.sql.functions
+    inputSDF = inputSDF.withColumn('timestamp', f.current_timestamp())
+    solutionSDF = inputSDF.withWatermark('timestamp', '10 minutes')
+    solutionSDF = solutionSDF.select('timestamp', 'start_station_name')
+    solutionSDF = solutionSDF.groupBy(f.window(f.col('timestamp'), '2 minutes'), f.col('start_station_name')) \
+        .agg(f.count(f.col('start_station_name')).alias('num_departures'))
 
-
-
-
+    solutionSDF = solutionSDF.filter(pyspark.sql.functions.col('num_departures') >= min_trips)
 
     # ------------------------------------------------
     # END OF YOUR CODE
     # ------------------------------------------------
 
     # 7. Operation O1: We create the DataStreamWritter, to print by console the results in complete mode
-    myDSW = solutionSDF.writeStream\
-                       .format("console") \
-                       .trigger(processingTime=my_frequency) \
-                       .option("checkpointLocation", checkpoint_dir) \
-                       .outputMode("append")
+    myDSW = solutionSDF.writeStream \
+        .format("console") \
+        .trigger(processingTime=my_frequency) \
+        .option("checkpointLocation", checkpoint_dir) \
+        .outputMode("append")
 
     # 8. We return the DataStreamWritter
     return myDSW
@@ -151,8 +153,7 @@ def streaming_simulation(local_False_databricks_True,
                          verbose,
                          num_batches,
                          dataset_file_names
-                        ):
-
+                         ):
     # 1. We check what time is it
     start = time.time()
 
@@ -222,8 +223,7 @@ def my_main(spark,
             num_batches,
             verbose,
             min_trips
-           ):
-
+            ):
     # 1. We get the names of the files of our dataset
     dataset_file_names = get_source_dir_file_names(local_False_databricks_True, source_dir, verbose)
 
@@ -233,7 +233,7 @@ def my_main(spark,
                    checkpoint_dir,
                    time_step_interval,
                    min_trips
-                  )
+                   )
 
     # 3. We get the StreamingQuery object derived from starting the DataStreamWriter
     ssq = dsw.start()
@@ -246,13 +246,13 @@ def my_main(spark,
                          verbose,
                          num_batches,
                          dataset_file_names
-                        )
+                         )
 
     # 5. We stop the StreamingQuery object
     try:
-      ssq.stop()
+        ssq.stop()
     except:
-      print("Thread streaming_simulation finished while Thread ssq is still computing")
+        print("Thread streaming_simulation finished while Thread ssq is still computing")
 
 
 # --------------------------------------------------------
@@ -342,5 +342,4 @@ if __name__ == '__main__':
             num_batches,
             verbose,
             min_trips
-           )
-
+            )

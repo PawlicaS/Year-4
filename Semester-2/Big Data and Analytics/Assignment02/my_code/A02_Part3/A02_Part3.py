@@ -22,6 +22,7 @@
 import pyspark
 import pyspark.sql.functions
 
+
 # ------------------------------------------
 # FUNCTION my_main
 # ------------------------------------------
@@ -59,11 +60,19 @@ def my_main(spark, my_dataset_dir, bike_id):
     # ------------------------------------------------
 
     # Type all your code here. Use auxiliary functions if needed.
-    pass
-
-
-
-
+    # Row(start_time, start_station_name, stop_time, stop_station_name)
+    f = pyspark.sql.functions
+    truck_station = f.lag('stop_station_name', 1).over(pyspark.sql.Window.orderBy('start_time'))
+    truck_time = f.lag('stop_time', 1).over(pyspark.sql.Window.orderBy('start_time'))
+    solutionDF = inputDF.where(f.col('bike_id') == bike_id)
+    solutionDF = solutionDF.withColumn('truck_station', truck_station).withColumn('truck_time', truck_time)
+    solutionDF = solutionDF.select(f.col('start_time'), f.col('start_station_name'), f.col('stop_time'), f.col('stop_station_name'), f.col('truck_station'), f.col('truck_time'))
+    solutionDF = solutionDF.where(f.col('start_station_name') != f.col('truck_station'))
+    solutionDF = solutionDF.select(f.col('truck_time'), f.col('truck_station'), f.col('start_time'), f.col('start_station_name'))\
+        .withColumnRenamed('start_time', 'stop_time')\
+        .withColumnRenamed('start_station_name', 'stop_station_name')\
+        .withColumnRenamed('truck_time', 'start_time')\
+        .withColumnRenamed('truck_station', 'start_station_name')
 
     # ------------------------------------------------
     # END OF YOUR CODE
@@ -71,8 +80,11 @@ def my_main(spark, my_dataset_dir, bike_id):
 
     # Operation A1: 'collect' to get all results
     resVAL = solutionDF.collect()
-    for item in resVAL:
-        print(item)
+    with open('../../my_results/Student_Solutions/A02_Part3/result.txt', 'w') as file:
+        for item in resVAL:
+            print(item)
+            file.write(str(item)+'\n')
+
 
 # --------------------------------------------------------
 #
@@ -106,4 +118,3 @@ if __name__ == '__main__':
 
     # 5. We call to our main function
     my_main(spark, my_dataset_dir, bike_id)
-
