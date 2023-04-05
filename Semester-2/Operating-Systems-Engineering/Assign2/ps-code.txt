@@ -1,0 +1,77 @@
+// ps.c
+
+#include "types.h"
+#include "stat.h"
+#include "user.h"
+
+//From proc.h Proc structure
+// Per-process state
+enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
+struct uproc {
+int pid;
+int ppid;
+int state;
+uint sz;
+char name[16];
+};
+
+#define MAX_PROC 10
+extern int  getprocs(int,struct uproc[10]);
+int
+main(int argc, char *argv[]){  
+  struct uproc ptable[MAX_PROC];
+  struct uproc *p;
+  int err;
+  
+  err = getprocs(10,&ptable);
+  if(err !=0)
+    printf(1,"Error getting ptable");
+  
+  /* TODO output the process details */
+  printf(1, "PID\tName\tState\n");
+  for(int i = 0; i < 10; i++){
+    p = &ptable[i];
+    if(p->pid > 0) // Only print details for active processes
+      printf(1, "%d\t%s\t%s\n", p->pid, p->name, p->state);
+  }
+
+  	  
+  exit();
+}
+
+
+
+
+// add to  sysproc.c
+
+//Processes || Copy elements from the kernel ptable to user space
+extern struct proc * getptable_proc(void);
+struct uproc {
+int pid;
+int ppid;
+int state;
+uint sz;
+char name[16];
+};
+
+int sys_getprocs(void){
+  int size;
+  struct uproc *buf;
+  struct proc *p = '\0';
+  char *pbuf;
+  if (argint(0, &size) <0){
+    return -1;
+  }
+  if (argptr(1, &pbuf,size*sizeof(struct uproc)) <0){
+    return -1;
+  }
+
+buf = (struct uproc *)pbuf;
+// need to write the getptable_proc function
+
+  p = getptable_proc();
+
+//copy from the p table to buf
+
+  
+}

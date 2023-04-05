@@ -270,7 +270,7 @@ def data_fusion():
 def save_data(accuracies):
     with open('results.txt', 'w') as file:
         for i in accuracies:
-            file.write(i)
+            file.write(f"{i} - {accuracies[i]}\n")
 
 
 def plot(accuracies):

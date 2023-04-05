@@ -1,4 +1,0 @@
-grpcio
-googleapis-common-protos
-tinydb
-typing_extensions
