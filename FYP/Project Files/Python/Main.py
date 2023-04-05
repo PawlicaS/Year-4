@@ -270,7 +270,7 @@ def data_fusion():
 def save_data(accuracies):
     with open('results.txt', 'w') as file:
         for i in accuracies:
-            file.write(f"{i} - {accuracies[i]}\n")
+            file.write(f"{i}, {accuracies[i]}\n")
 
 
 def plot(accuracies):
@@ -278,8 +278,9 @@ def plot(accuracies):
     algorithms = accuracies.keys()
     accuracy_values = accuracies.values()
 
+    plt.yticks(np.arange(0, 100, 5))
+    plt.grid(axis='y', linestyle='--')
     plt.bar(algorithms, accuracy_values)
-
     plt.title('Accuracy Comparison')
     plt.xlabel('Algorithm')
     plt.ylabel('Accuracy %')
@@ -288,6 +289,14 @@ def plot(accuracies):
 
 
 def main():
+    # accuracies = {}
+    # with open('results.txt', 'r') as file:
+    #     for i in file:
+    #         i = i.replace('\n', '')
+    #         x = i.split(' - ')
+    #         accuracies[x[0]] = float(x[1])
+    # plot(accuracies)
+    # quit()
     data = check_file()
     x_train, x_test, y_train, y_test = prepocessing(data)
     accuracies = {}
