@@ -4,171 +4,410 @@
 <!-- Load d3.js -->
 <script src="https://d3js.org/d3.v4.js"></script>
 
-<!-- Add 3 buttons -->
-<button onclick="update(game1)">The Witcher 3</button>
-<button onclick="update(game2)">Assassin's Creed: Origins</button>
-<button onclick="update(game3)">Total War: Warhammer II</button>
-
 <!-- Create a div where the graph will take place -->
-<div id="my_dataviz"></div>
+<div id="data_vis">
+
+    <p>
+    Choose Game:
+    <button onclick="update(game1, null, null)">The Witcher 3: Wild Hunt</button>
+    <button onclick="update(game2, null, null)">Assassin's Creed: Origins</button>
+    <button onclick="update(game3, null, null)">Total War: Warhammer II</button>
+    </p>
+    <p>
+    Available Retailers:
+    <select id="retailButton">Retail Stores</select>
+    </p>
+    <p>
+    Available Keyshops:
+    <select id="keyshopsButton">Keyshops</select>
+    </p>
+    <p>
+    Toggle:
+    <button onclick="updateLine('retail')">Retail Prices</button>
+    <button onclick="updateLine('keyshops')">Keyshop Prices</button>
+    </p>
+    <h2 id = "comparison">
+    </h2>
+
+</div>
 
 <script>
 
-  // set the dimensions and margins of the graph
-  var margin = {top: 10, right: 30, bottom: 30, left: 60},
-      width = 1240 - margin.left - margin.right,
-      height = 620 - margin.top - margin.bottom;
+    var curG = null;
+    var curR = null;
+    var curK = null;
+    var game1 = "data/values_1.json";
+    var game2 = "data/values_2.json";
+    var game3 = "data/values_3.json";
+
+    // set the dimensions and margins of the graph
+    var margin = {top: 10, right: 30, bottom: 30, left: 60},
+        width = 1240 - margin.left - margin.right,
+        height = 620 - margin.top - margin.bottom;
   
-  // append the svg object to the body of the page
-  var svg = d3.select("#my_dataviz")
-    .append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-      .attr("transform",
-            "translate(" + margin.left + "," + margin.top + ")");
-  
-  //Read the data
-  d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/3_TwoNumOrdered_comma.csv",
-  
-    // When reading the csv, I must format variables:
-    function(d){
-      return { date : d3.timeParse("%Y-%m-%d")(d.date), value : d.value }
-    },
-  
-    // Now I can use this dataset:
-    function(data) {
-  
-      // Add X axis --> it is a date format
-      var x = d3.scaleTime()
-        .domain(d3.extent(data, function(d) { return d.date; }))
-        .range([ 0, width ]);
-      xAxis = svg.append("g")
+    // append the svg object to the body of the page
+    var svg = d3.select("#data_vis")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
+
+    // Initialise a X axis:
+    var x = d3.scaleTime().range([0,width]);
+    var xAxis = d3.axisBottom().scale(x);
+    svg.append("g")
         .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x));
+        .attr("class","myXaxis")
+
+    // Initialize an Y axis
+    var y = d3.scaleLinear().range([height, 0]);
+    var yAxis = d3.axisLeft().scale(y);
+    svg.append("g")
+        .attr("class","myYaxis")
   
-      // Add Y axis
-      var y = d3.scaleLinear()
-        .domain([0, d3.max(data, function(d) { return +d.value; })])
-        .range([ height, 0 ]);
-      yAxis = svg.append("g")
-        .call(d3.axisLeft(y));
-
-      // This allows to find the closest X index of the mouse:
-      var bisect = d3.bisector(function(d) { return d.date; }).left;
-
-      // Create the circle that travels along the curve of chart
-      var focus = svg
-        .append('g')
-        .append('circle')
-          .style("fill", "none")
-          .attr("stroke", "black")
-          .attr('r', 2)
-          .style("opacity", 0)
-
-      // Create the text that travels along the curve of chart
-      var focusText = svg
-        .append('g')
-        .append('text')
-          .style("opacity", 0)
-          .attr("text-anchor", "left")
-          .attr("alignment-baseline", "middle")
-  
-      // Add a clipPath: everything out of this area won't be drawn.
-      // var clip = svg.append("defs").append("svg:clipPath")
-      //     .attr("id", "clip")
-      //     .append("svg:rect")
-      //     .attr("width", width )
-      //     .attr("height", height )
-      //     .attr("x", 0)
-      //     .attr("y", 0);
-  
-      // Create the line variable: where both the line and the brush take place
-      var line = svg.append('g')
-        .attr("clip-path", "url(#clip)")
-  
-      // Add the line
-      line.append("path")
-        .datum(data)
-        .attr("fill", "none")
-        .attr("stroke", "steelblue")
-        .attr("stroke-width", 1.5)
-        .attr("d", d3.line()
-          .x(function(d) { return x(d.date) })
-          .y(function(d) { return y(d.value) })
-          )
-  
-      // Set the zoom and Pan features: how much you can zoom, on which part, and what to do when there is a zoom
-      // var zoom = d3.zoom()
-      //     .scaleExtent([.5, 20])  // This control how much you can unzoom (x0.5) and zoom (x20)
-      //     .extent([[0, 0], [width, height]])
-      //     .on("zoom", updateChart);
-
-      // This add an invisible rect on top of the chart area. This rect can recover pointer events: necessary to understand when the user zoom
-      // svg.append("rect")
-      //     .attr("width", width)
-      //     .attr("height", height)
-      //     .style("fill", "none")
-      //     .style("pointer-events", "all")
-      //     .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-      //     .call(zoom);
-      // now the user can zoom and it will trigger the function called updateChart
-
-      // Create a rect on top of the svg area: this rectangle recovers mouse position
-      svg
-        .append('rect')
-        .style("fill", "none")
-        .style("pointer-events", "all")
-        .attr('width', width)
-        .attr('height', height)
-        .on('mouseover', mouseover)
-        .on('mousemove', mousemove)
-        .on('mouseout', mouseout);
-
-      // What happens when the mouse move -> show the annotations at the right positions.
-      function mouseover() {
-        focus.style("opacity", 1)
-        focusText.style("opacity",1)
-      }
-
-      function mousemove() {
-        // recover coordinate we need
-        var x0 = x.invert(d3.mouse(this)[0]);
-        console.log(data, x0, 1);
-        var i = bisect(data, x0, 1);
-        selectedData = data[i]
-        focus
-          .attr("cx", x(selectedData.date))
-          .attr("cy", y(selectedData.value))
-        focusText
-          .html("x:" + selectedData.date + "  -  " + "y:" + selectedData.value)
-          .attr("x", x(selectedData.date) + 15)
-          .attr("y", y(selectedData.value))
+    function update(game, retail = null, keyshop = null) {
+        curG = game;
+        curR = retail;
+        curK = keyshop;
+        if (retail == null && keyshop == null) {
+            d3.select("#comparison").text("Comparing all retail vs all keyshop prices");
         }
-      function mouseout() {
-        focus.style("opacity", 0)
-        focusText.style("opacity", 0)
-      }
+        else if (retail != null && keyshop != null) {
+            d3.select("#comparison").text("Comparing " + retail + " vs " + keyshop + " prices");
+        }
+        else {
+            if (keyshop == null) {
+                d3.select("#comparison").text("Comparing " + retail + " vs all keyshop prices");
+            }
+            else {
+                d3.select("#comparison").text("Comparing all retail vs " + keyshop + " prices");
+            }
+        }
+        
+        var retailData = [];
+        var allRetail = [];
+        var keyshopsData = [];
+        var allKeyshop = [];
+        allRetail.push({date: new Date(01/01/1990), price: 0, shop: "Choose"});
+        allKeyshop.push({date: new Date(01/01/1990), price: 0, shop: "Choose"});
+        d3.json(game, function(error, data) {
+            if (error) throw error;
+            for (var i = 0; i < data.chartData.retail.length; i++) {
+                if (data.chartData.retail[i].y != null) {
+                    if (data.chartData.retail[i].x != null) {
+                        var xVal = new Date(data.chartData.retail[i].x);
+                        allRetail.push({date: xVal, price: data.chartData.retail[i].y, shop: data.chartData.retail[i].shop})
+                        if (retail == null) {
+                            retailData.push({date: xVal, price: data.chartData.retail[i].y, shop: data.chartData.retail[i].shop})
+                        }
+                        else {
+                            if (data.chartData.retail[i].shop == retail) {
+                                retailData.push({date: xVal, price: data.chartData.retail[i].y, shop: data.chartData.retail[i].shop})
+                            }
+                        }
+                    }
+                }
+            }
+            for (var i = 0; i < data.chartData.keyshops.length; i++) {
+                if (data.chartData.keyshops[i].y != null) {
+                    if (data.chartData.keyshops[i].x != null) {
+                        var xVal = new Date(data.chartData.keyshops[i].x);
+                        allKeyshop.push({date: xVal, price: data.chartData.keyshops[i].y, shop: data.chartData.keyshops[i].shop})
+                        if (keyshop == null) {
+                            keyshopsData.push({date: xVal, price: data.chartData.keyshops[i].y, shop: data.chartData.keyshops[i].shop})
+                        }
+                        else {
+                            if (data.chartData.keyshops[i].shop == keyshop) {
+                                keyshopsData.push({date: xVal, price: data.chartData.keyshops[i].y, shop: data.chartData.keyshops[i].shop})
+                            }
+                        }
+                    }
+                }
+            }
 
-      // A function that updates the chart when the user zoom and thus new boundaries are available
-      // function updateChart() {
+            var uniqueRetails = d3.set(allRetail.map(function(d) { return d.shop })).values();
+            var uniqueKeyshops = d3.set(allKeyshop.map(function(d) { return d.shop })).values();
 
-      //   // recover the new scale
-      //   var newX = d3.event.transform.rescaleX(x);
-      //   var newY = d3.event.transform.rescaleY(y);
+             // add the options to the button
+            d3.select("#retailButton")
+            .selectAll("option")
+                .remove();
 
-      //   // update axes with these new boundaries
-      //   xAxis.call(d3.axisBottom(newX))
-      //   yAxis.call(d3.axisLeft(newY))
+            d3.select("#keyshopsButton")
+            .selectAll("option")
+                .remove();
 
-      //   // update line
-      //   line.selectAll("path")
-      //     .attr("d", d3.line()
-      //     .x(function(d) { return newX(d.date) })
-      //     .y(function(d) { return newY(d.value) })
-      //     )
-      // }
-  
-  })
+             // add the options to the button
+            d3.select("#retailButton")
+            .selectAll('myOptions')
+                .data(uniqueRetails)
+            .enter()
+                .append('option')
+            .text(function (d) { return d; }) // text showed in the menu
+            .attr("value", function (d) { return d; }) // corresponding value returned by the button
+            
+            d3.select("#keyshopsButton")
+            .selectAll('myOptions')
+                .data(uniqueKeyshops)
+            .enter()
+                .append('option')
+            .text(function (d) { return d; }) // text showed in the menu
+            .attr("value", function (d) { return d; }) // corresponding value returned by the button
+
+            // Create the X axis:
+            x.domain(d3.extent([...retailData, ...keyshopsData], d => d.date));
+            svg.selectAll(".myXaxis").transition()
+                .duration(100)
+                .call(xAxis);
+
+            // create the Y axis
+            y.domain([0, d3.max([...retailData, ...keyshopsData], d => d.price)]);
+            svg.selectAll(".myYaxis")
+                .transition()
+                .duration(100)
+                .call(yAxis);
+
+            // Add a clipPath: everything out of this area won't be drawn.
+            var clip = svg.append("defs").append("svg:clipPath")
+                .attr("id", "clip")
+                .append("svg:rect")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("x", 0)
+                .attr("y", 0);
+
+            // Add brushing
+            var brush = d3.brushX()                   // Add the brush feature using the d3.brush function
+                .extent( [ [0,0], [width,height] ] )  // initialise the brush area: start at 0,0 and finishes at width,height: it means I select the whole graph area
+                .on("end", updateChart)               // Each time the brush selection changes, trigger the 'updateChart' function
+
+            // Create the line variable: where both the line and the brush take place
+            var line = svg.append('g')
+            .attr("clip-path", "url(#clip)")
+
+            // This allows to find the closest X index of the mouse:
+            var bisect = d3.bisector(function(d) { return d.date; }).left;
+
+            // Create the circle that travels along the curve of chart
+            var focusR = svg.append('g')
+            .append('circle')
+                .style("fill", "none")
+                .attr("stroke", "black")
+                .attr('r', 2)
+                .style("opacity", 0)
+
+            var focusK = svg.append('g')
+            .append('circle')
+                .style("fill", "none")
+                .attr("stroke", "black")
+                .attr('r', 2)
+                .style("opacity", 0)
+
+            // Create the text that travels along the curve of chart
+            var focusTextR = svg.append('g')
+            .append('text')
+                .style("opacity", 0)
+                .attr("text-anchor", "left")
+                .attr("alignment-baseline", "middle")
+
+            var focusTextK = svg.append('g')
+            .append('text')
+                .style("opacity", 0)
+                .attr("text-anchor", "left")
+                .attr("alignment-baseline", "middle")
+
+            // Create an update selection: bind to the new data
+            var u = svg.selectAll(".retail")
+                .data([retailData], function(d){ return d.date });
+
+            var u2 = svg.selectAll(".keyshops")
+                .data([keyshopsData], function(d){ return d.date });
+
+            // Update the line
+            u.enter()
+                .append("path")
+                .attr("class","retail")
+                .merge(u)
+                .transition()
+                .duration(100)
+                .attr("d", d3.line()
+                    .x(function(d) { return x(d.date); })
+                    .y(function(d) { return y(d.price); }))
+                .attr("fill", "none")
+                .attr("stroke", "blue")
+                .attr("stroke-width", 1.5)
+                .attr("clip-path", "url(#clip)")
+
+            u2.enter()
+                .append("path")
+                .attr("class","keyshops")
+                .merge(u2)
+                .transition()
+                .duration(100)
+                .attr("d", d3.line()
+                    .x(function(d) { return x(d.date); })
+                    .y(function(d) { return y(d.price); }))
+                .attr("fill", "none")
+                .attr("stroke", "red")
+                .attr("stroke-width", 1.5)
+                .attr("clip-path", "url(#clip)")
+
+            // Add the brushing
+            line.append("g")
+                .attr("class", "brush")
+                .call(brush);
+
+            // A function that set idleTimeOut to null
+            var idleTimeout
+            function idled() { idleTimeout = null; }
+                
+            d3.selectAll("path").style("opacity", 1);
+
+            // Create a rect on top of the svg area: this rectangle recovers mouse position
+            svg.append('rect')
+                .style("fill", "none")
+                .style("pointer-events", "all")
+                .attr('width', width)
+                .attr('height', height-20)
+                .on('mouseover', mouseover)
+                .on('mousemove', mousemove)
+                .on('mouseout', mouseout);
+
+            // If user double click, reinitialize the chart
+            svg.on("dblclick",function(){
+            x.domain(d3.extent([...retailData, ...keyshopsData], d => d.date));
+            svg.selectAll(".myXaxis").transition()
+                    .duration(100)
+                    .call(xAxis)
+            d3.select("path.retail")
+                .transition()
+                .attr("d", d3.line()
+                .x(function(d) { return x(d.date); })
+                .y(function(d) { return y(d.price); })
+                )
+            d3.select("path.keyshops")
+                .transition()
+                .attr("d", d3.line()
+                .x(function(d) { return x(d.date); })
+                .y(function(d) { return y(d.price); })
+                )
+            });
+            
+            function updateChart() {
+                // What are the selected boundaries?
+                extent = d3.event.selection
+
+                // If no selection, back to initial coordinate. Otherwise, update X axis domain
+                if(!extent){
+                if (!idleTimeout) return idleTimeout = setTimeout(idled, 350); // This allows to wait a little bit
+                x.domain([ 4,8])
+                }else{
+                x.domain([ x.invert(extent[0]), x.invert(extent[1]) ])
+                line.select(".brush").call(brush.move, null) // This remove the grey brush area as soon as the selection has been done
+                }
+
+                // Update axis and line position
+                svg.selectAll(".myXaxis").transition()
+                    .duration(100)
+                    .call(xAxis)
+                d3.select("path.retail")
+                    .transition()
+                    .duration(100)
+                    .attr("d", d3.line()
+                    .x(function(d) { return x(d.date); })
+                    .y(function(d) { return y(d.price); })
+                    )
+                d3.select("path.keyshops")
+                    .transition()
+                    .duration(100)
+                    .attr("d", d3.line()
+                    .x(function(d) { return x(d.date); })
+                    .y(function(d) { return y(d.price); })
+                    )
+            }
+
+            // What happens when the mouse move -> show the annotations at the right positions.
+            function mouseover() {
+                if (d3.select(".retail").style("opacity") > 0) {
+                    d3.select(".retail").style("opacity", 0.5);
+                    focusR.style("opacity", 1)
+                    focusTextR.style("opacity", 1)
+                }
+
+                if (d3.select(".keyshops").style("opacity") > 0) {
+                    d3.select(".keyshops").style("opacity", 0.5);
+                    focusK.style("opacity", 1)
+                    focusTextK.style("opacity", 1)
+                }
+            }
+
+            function mousemove() {
+                // recover coordinate we need
+                var x0 = x.invert(d3.mouse(this)[0]);
+                var formatTime = d3.timeFormat("%b-%d-%Y")
+
+                if (d3.select(".retail").style("opacity") > 0) {
+                    var i = bisect(retailData, x0, 1);
+                    selectedDataR = retailData[i]
+                    focusR.attr("cx", x(selectedDataR.date))
+                        .attr("cy", y(selectedDataR.price))
+                    focusTextR.html(formatTime(selectedDataR.date) + ": " + "\u20AC" + selectedDataR.price + " - " + selectedDataR.shop)
+                        .attr("x", x(selectedDataR.date) + 15)
+                        .attr("y", y(selectedDataR.price))
+                }
+
+                if (d3.select(".keyshops").style("opacity") > 0) {
+                    var j = bisect(keyshopsData, x0, 1);
+                    selectedDataK = keyshopsData[j]
+                    focusK.attr("cx", x(selectedDataK.date))
+                        .attr("cy", y(selectedDataK.price))
+                    focusTextK.html(formatTime(selectedDataK.date) + ": " + "\u20AC" + selectedDataK.price + " - " + selectedDataK.shop)
+                        .attr("x", x(selectedDataK.date) + 15)
+                        .attr("y", y(selectedDataK.price))
+                }
+            }
+
+            function mouseout() {
+                focusR.style("opacity", 0)
+                focusTextR.style("opacity", 0)
+                focusK.style("opacity", 0)
+                focusTextK.style("opacity", 0)
+                if (d3.select(".retail").style("opacity") > 0) {
+                    d3.select(".retail").style("opacity", 1);
+                }
+                if (d3.select(".keyshops").style("opacity") > 0) {
+                    d3.select(".keyshops").style("opacity", 1);
+                }
+            }
+        });
+    }
+
+    // At the beginning, I run the update function on the first dataset:
+    update(game1)
+
+    // When the button is changed, run the updateChart function
+    d3.select("#retailButton").on("change", function(d) {
+                // recover the option that has been chosen
+                var selectedOption = d3.select(this).property("value")
+                update(curG, retail = selectedOption, curK);
+    })
+    
+    d3.select("#keyshopsButton").on("change", function(d) {
+                // recover the option that has been chosen
+                var selectedOption = d3.select(this).property("value")
+                update(curG, curR, keyshop = selectedOption);
+    })
+
+    function updateLine(line) {
+        if (d3.select("." + line).style("opacity") == 1) {
+            d3.select("." + line).style("opacity", 0);
+        }
+        else {
+            d3.select("." + line).style("opacity", 1);
+        }
+    }
+
   
   </script>
