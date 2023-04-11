@@ -212,8 +212,7 @@ def distilbert(data):
     texts = df['content'].to_list()
 
     encoder = LabelEncoder()
-    df['author_encoded'] = encoder.fit_transform(df['author'])
-    labels = df['author_encoded'].to_list()
+    labels = encoder.fit_transform(df['author'])
 
     train_ratio = 0.70
     test_ratio = 0.20
