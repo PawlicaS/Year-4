@@ -7,18 +7,35 @@
 <!-- Create a div where the graph will take place -->
 <div id="data_vis">
 
-    <button onclick="update(game1)">The Witcher 3: Wild Hunt</button>
-    <button onclick="update(game2)">Assassin's Creed: Origins</button>
-    <button onclick="update(game3)">Total War: Warhammer II</button>
+    <p>
+    Choose Game:
+    <button onclick="update(game1, null, null)">The Witcher 3: Wild Hunt</button>
+    <button onclick="update(game2, null, null)">Assassin's Creed: Origins</button>
+    <button onclick="update(game3, null, null)">Total War: Warhammer II</button>
+    </p>
+    <p>
+    Available Retailers:
     <select id="retailButton">Retail Stores</select>
+    </p>
+    <p>
+    Available Keyshops:
     <select id="keyshopsButton">Keyshops</select>
-    <button onclick="updateLine('retail')">Retail Stores Prices</button>
-    <button onclick="updateLine('keyshops')">Keyshops Prices</button>
+    </p>
+    <p>
+    Toggle:
+    <button onclick="updateLine('retail')">Retail Prices</button>
+    <button onclick="updateLine('keyshops')">Keyshop Prices</button>
+    </p>
+    <h2 id = "comparison">
+    </h2>
 
 </div>
 
 <script>
 
+    var curG = null;
+    var curR = null;
+    var curK = null;
     var game1 = "data/values_1.json";
     var game2 = "data/values_2.json";
     var game3 = "data/values_3.json";
@@ -50,16 +67,46 @@
     svg.append("g")
         .attr("class","myYaxis")
   
-    function update(game) {
+    function update(game, retail = null, keyshop = null) {
+        curG = game;
+        curR = retail;
+        curK = keyshop;
+        if (retail == null && keyshop == null) {
+            d3.select("#comparison").text("Comparing all retails vs all keyshops");
+        }
+        else if (retail != null && keyshop != null) {
+            d3.select("#comparison").text("Comparing " + retail + " vs " + keyshop);
+        }
+        else {
+            if (keyshop == null) {
+                d3.select("#comparison").text("Comparing " + retail + " vs all keyshops");
+            }
+            else {
+                d3.select("#comparison").text("Comparing all retails vs " + keyshop);
+            }
+        }
+        
         var retailData = [];
+        var allRetail = [];
         var keyshopsData = [];
+        var allKeyshop = [];
+        allRetail.push({date: new Date(01/01/1990), price: 0, shop: "Choose"});
+        allKeyshop.push({date: new Date(01/01/1990), price: 0, shop: "Choose"});
         d3.json(game, function(error, data) {
             if (error) throw error;
             for (var i = 0; i < data.chartData.retail.length; i++) {
                 if (data.chartData.retail[i].y != null) {
                     if (data.chartData.retail[i].x != null) {
                         var xVal = new Date(data.chartData.retail[i].x);
-                        retailData.push({date: xVal, price: data.chartData.retail[i].y, shop: data.chartData.retail[i].shop})
+                        allRetail.push({date: xVal, price: data.chartData.retail[i].y, shop: data.chartData.retail[i].shop})
+                        if (retail == null) {
+                            retailData.push({date: xVal, price: data.chartData.retail[i].y, shop: data.chartData.retail[i].shop})
+                        }
+                        else {
+                            if (data.chartData.retail[i].shop == retail) {
+                                retailData.push({date: xVal, price: data.chartData.retail[i].y, shop: data.chartData.retail[i].shop})
+                            }
+                        }
                     }
                 }
             }
@@ -67,13 +114,21 @@
                 if (data.chartData.keyshops[i].y != null) {
                     if (data.chartData.keyshops[i].x != null) {
                         var xVal = new Date(data.chartData.keyshops[i].x);
-                        keyshopsData.push({date: xVal, price: data.chartData.keyshops[i].y, shop: data.chartData.keyshops[i].shop})
+                        allKeyshop.push({date: xVal, price: data.chartData.keyshops[i].y, shop: data.chartData.keyshops[i].shop})
+                        if (keyshop == null) {
+                            keyshopsData.push({date: xVal, price: data.chartData.keyshops[i].y, shop: data.chartData.keyshops[i].shop})
+                        }
+                        else {
+                            if (data.chartData.keyshops[i].shop == keyshop) {
+                                keyshopsData.push({date: xVal, price: data.chartData.keyshops[i].y, shop: data.chartData.keyshops[i].shop})
+                            }
+                        }
                     }
                 }
             }
 
-            var uniqueRetails = d3.set(retailData.map(function(d) { return d.shop })).values();
-            var uniqueKeyshops = d3.set(keyshopsData.map(function(d) { return d.shop })).values();
+            var uniqueRetails = d3.set(allRetail.map(function(d) { return d.shop })).values();
+            var uniqueKeyshops = d3.set(allKeyshop.map(function(d) { return d.shop })).values();
 
              // add the options to the button
             d3.select("#retailButton")
@@ -336,17 +391,13 @@
     d3.select("#retailButton").on("change", function(d) {
                 // recover the option that has been chosen
                 var selectedOption = d3.select(this).property("value")
-                console.log(selectedOption);
-                // run the updateStoreLine function with this selected option
-                // update(selectedOption)
+                update(curG, retail = selectedOption, curK);
     })
     
     d3.select("#keyshopsButton").on("change", function(d) {
                 // recover the option that has been chosen
                 var selectedOption = d3.select(this).property("value")
-                console.log(selectedOption);
-                // run the updateStoreLine function with this selected option
-                // update(selectedOption)
+                update(curG, curR, keyshop = selectedOption);
     })
 
     function updateLine(line) {
