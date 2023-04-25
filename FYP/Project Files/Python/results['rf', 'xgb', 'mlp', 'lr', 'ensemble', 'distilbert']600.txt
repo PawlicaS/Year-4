@@ -1,0 +1,8 @@
+600 min samples
+Using ['rf', 'xgb', 'mlp', 'lr', 'ensemble', 'distilbert']
+Random Forest, 97.37010904425915
+XGBoost, 97.40218088518282
+Multilayer Perceptron, 97.37010904425915
+Logistic Regression, 96.50416933932007
+Ensemble, 97.97947402180885
+DistilBERT, 91.96995956094743

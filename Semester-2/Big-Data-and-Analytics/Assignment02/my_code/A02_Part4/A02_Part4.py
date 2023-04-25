@@ -79,13 +79,14 @@ def my_model(spark,
 
     # Type all your code here. Use auxiliary functions if needed.
     f = pyspark.sql.functions
-    inputSDF = inputSDF.withColumn('timestamp', f.current_timestamp())
-    solutionSDF = inputSDF.withWatermark('timestamp', '10 minutes')
-    solutionSDF = solutionSDF.select('timestamp', 'start_station_name')
-    solutionSDF = solutionSDF.groupBy(f.window(f.col('timestamp'), '2 minutes'), f.col('start_station_name')) \
-        .agg(f.count(f.col('start_station_name')).alias('num_departures'))
 
-    solutionSDF = solutionSDF.filter(pyspark.sql.functions.col('num_departures') >= min_trips)
+    inputSDF = inputSDF.withColumn("my_time", f.current_timestamp())
+    solutionSDF = inputSDF.withWatermark("my_time", "0 seconds").groupBy(f.window("my_time", my_frequency, my_frequency),
+                                                                         f.col('start_station_name')).agg(f.count(f.col('start_station_name')).alias('num_departures'))
+    solutionSDF = solutionSDF.filter(f.col('num_departures') >= min_trips)
+    solutionSDF = solutionSDF.withColumn("window_start", f.col("window").start.cast("string")).withColumn("window_end",
+                                                                                                          f.col("window").end.cast("string")).drop("window")
+    solutionSDF = solutionSDF.select('start_station_name', 'num_departures')
 
     # ------------------------------------------------
     # END OF YOUR CODE

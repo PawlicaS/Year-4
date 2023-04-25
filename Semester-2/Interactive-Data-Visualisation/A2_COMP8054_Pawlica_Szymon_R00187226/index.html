@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 
-<!-- Load d3.js -->
 <script src="https://d3js.org/d3.v4.js"></script>
 
-<!-- Create a div where the graph will take place -->
 <div id="data_vis">
 
     <p>
@@ -33,6 +31,7 @@
 
 <script>
 
+	// Create necessary variables
     var curG = null;
     var curR = null;
     var curK = null;
@@ -40,12 +39,12 @@
     var game2 = "data/values_2.json";
     var game3 = "data/values_3.json";
 
-    // set the dimensions and margins of the graph
+    // Set the dimensions and margins of the graph
     var margin = {top: 10, right: 30, bottom: 30, left: 60},
         width = 1240 - margin.left - margin.right,
         height = 620 - margin.top - margin.bottom;
   
-    // append the svg object to the body of the page
+    // Append the svg object to the body of the page
     var svg = d3.select("#data_vis")
         .append("svg")
         .attr("width", width + margin.left + margin.right)
@@ -92,6 +91,8 @@
         var allKeyshop = [];
         allRetail.push({date: new Date(01/01/1990), price: 0, shop: "Choose"});
         allKeyshop.push({date: new Date(01/01/1990), price: 0, shop: "Choose"});
+		
+		// Filter the data from the json file
         d3.json(game, function(error, data) {
             if (error) throw error;
             for (var i = 0; i < data.chartData.retail.length; i++) {
@@ -130,7 +131,7 @@
             var uniqueRetails = d3.set(allRetail.map(function(d) { return d.shop })).values();
             var uniqueKeyshops = d3.set(allKeyshop.map(function(d) { return d.shop })).values();
 
-             // add the options to the button
+             // Add options to the buttons
             d3.select("#retailButton")
             .selectAll("option")
                 .remove();
@@ -139,22 +140,21 @@
             .selectAll("option")
                 .remove();
 
-             // add the options to the button
             d3.select("#retailButton")
             .selectAll('myOptions')
                 .data(uniqueRetails)
             .enter()
                 .append('option')
-            .text(function (d) { return d; }) // text showed in the menu
-            .attr("value", function (d) { return d; }) // corresponding value returned by the button
+            .text(function (d) { return d; }) // Text showed in the menu
+            .attr("value", function (d) { return d; }) // Corresponding value returned by the button
             
             d3.select("#keyshopsButton")
             .selectAll('myOptions')
                 .data(uniqueKeyshops)
             .enter()
                 .append('option')
-            .text(function (d) { return d; }) // text showed in the menu
-            .attr("value", function (d) { return d; }) // corresponding value returned by the button
+            .text(function (d) { return d; })
+            .attr("value", function (d) { return d; })
 
             // Create the X axis:
             x.domain(d3.extent([...retailData, ...keyshopsData], d => d.date));
@@ -162,7 +162,7 @@
                 .duration(100)
                 .call(xAxis);
 
-            // create the Y axis
+            // Create the Y axis
             y.domain([0, d3.max([...retailData, ...keyshopsData], d => d.price)]);
             svg.selectAll(".myYaxis")
                 .transition()
@@ -179,18 +179,18 @@
                 .attr("y", 0);
 
             // Add brushing
-            var brush = d3.brushX()                   // Add the brush feature using the d3.brush function
-                .extent( [ [0,0], [width,height] ] )  // initialise the brush area: start at 0,0 and finishes at width,height: it means I select the whole graph area
-                .on("end", updateChart)               // Each time the brush selection changes, trigger the 'updateChart' function
+            var brush = d3.brushX()
+                .extent( [ [0,0], [width,height] ] )
+                .on("end", updateChart)
 
             // Create the line variable: where both the line and the brush take place
             var line = svg.append('g')
             .attr("clip-path", "url(#clip)")
 
-            // This allows to find the closest X index of the mouse:
+            // Find the closest X index to the mouse:
             var bisect = d3.bisector(function(d) { return d.date; }).left;
 
-            // Create the circle that travels along the curve of chart
+            // Create a circle that travels along the curve of chart
             var focusR = svg.append('g')
             .append('circle')
                 .style("fill", "none")
@@ -275,7 +275,7 @@
                 .on('mousemove', mousemove)
                 .on('mouseout', mouseout);
 
-            // If user double click, reinitialize the chart
+            // If user double clicks, zoom out
             svg.on("dblclick",function(){
             x.domain(d3.extent([...retailData, ...keyshopsData], d => d.date));
             svg.selectAll(".myXaxis").transition()
@@ -296,16 +296,16 @@
             });
             
             function updateChart() {
-                // What are the selected boundaries?
+                // Selected boundaries
                 extent = d3.event.selection
 
                 // If no selection, back to initial coordinate. Otherwise, update X axis domain
                 if(!extent){
-                if (!idleTimeout) return idleTimeout = setTimeout(idled, 350); // This allows to wait a little bit
+                if (!idleTimeout) return idleTimeout = setTimeout(idled, 350);
                 x.domain([ 4,8])
                 }else{
                 x.domain([ x.invert(extent[0]), x.invert(extent[1]) ])
-                line.select(".brush").call(brush.move, null) // This remove the grey brush area as soon as the selection has been done
+                line.select(".brush").call(brush.move, null) // Remove the grey brush area as soon as the selection has been done
                 }
 
                 // Update axis and line position
@@ -328,7 +328,7 @@
                     )
             }
 
-            // What happens when the mouse move -> show the annotations at the right positions.
+            // Show the annotations at the right positions when the mouse moves
             function mouseover() {
                 if (d3.select(".retail").style("opacity") > 0) {
                     d3.select(".retail").style("opacity", 0.5);
@@ -344,10 +344,11 @@
             }
 
             function mousemove() {
-                // recover coordinate we need
+                // Recover coordinates of mouse
                 var x0 = x.invert(d3.mouse(this)[0]);
                 var formatTime = d3.timeFormat("%b-%d-%Y")
-
+				
+				// Lower the opacity of the lines when hovering to makes tooltip values more visible
                 if (d3.select(".retail").style("opacity") > 0) {
                     var i = bisect(retailData, x0, 1);
                     selectedDataR = retailData[i]
@@ -369,6 +370,7 @@
                 }
             }
 
+			// On mouse out, reset the opacity of the lines 
             function mouseout() {
                 focusR.style("opacity", 0)
                 focusTextR.style("opacity", 0)
@@ -384,22 +386,22 @@
         });
     }
 
-    // At the beginning, I run the update function on the first dataset:
+    // Run the update function on the first dataset
     update(game1)
 
-    // When the button is changed, run the updateChart function
+    // When the button is clicked run update function
     d3.select("#retailButton").on("change", function(d) {
-                // recover the option that has been chosen
+                // Recover the option that has been chosen
                 var selectedOption = d3.select(this).property("value")
                 update(curG, retail = selectedOption, curK);
     })
     
     d3.select("#keyshopsButton").on("change", function(d) {
-                // recover the option that has been chosen
                 var selectedOption = d3.select(this).property("value")
                 update(curG, curR, keyshop = selectedOption);
     })
 
+	// Change the opacity of a line
     function updateLine(line) {
         if (d3.select("." + line).style("opacity") == 1) {
             d3.select("." + line).style("opacity", 0);

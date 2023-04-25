@@ -1,0 +1,4 @@
+1000 min samples
+Using mlpxgb
+XGBoost, 99.51923076923077
+Multilayer Perceptron, 98.3974358974359

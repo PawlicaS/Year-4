@@ -76,10 +76,8 @@ def my_main(spark, my_dataset_dir):
 
     # Operation A1: 'collect' to get all results
     resVAL = solutionDF.collect()
-    with open('../../my_results/Student_Solutions/A02_Part2/result.txt', 'w') as file:
-        for item in resVAL:
-            print(item)
-            file.write(str(item)+'\n')
+    for item in resVAL:
+        print(item)
 
 
 # --------------------------------------------------------
