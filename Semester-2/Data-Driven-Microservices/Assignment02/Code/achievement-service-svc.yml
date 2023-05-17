@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: achievement-service
+  labels:
+    app: achievement-service
+spec:
+  ports:
+  - port: 50054
+    protocol: TCP
+  selector:
+    app: achievement-service

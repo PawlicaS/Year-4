@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: purchase-auth-service
+spec:
+  replicas: 12
+  selector:
+    matchLabels:
+      app: purchase-auth-service
+  minReadySeconds: 6
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 3
+  template:
+    metadata:
+      labels:
+        app: purchase-auth-service
+    spec:
+      containers:
+      - name: purchase-auth-service
+        image: szymonpawlica22/purchase-auth:latest
+        ports:
+        - containerPort: 50052

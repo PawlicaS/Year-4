@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: achievement-service
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app: achievement-service
+  minReadySeconds: 6
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 3
+  template:
+    metadata:
+      labels:
+        app: achievement-service
+    spec:
+      containers:
+      - name: achievement-service
+        image: szymonpawlica22/achievement:latest
+        ports:
+        - containerPort: 50054

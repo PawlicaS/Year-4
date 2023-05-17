@@ -16,10 +16,11 @@ import xgboost as xgb
 
 from datasets import load_metric
 from matplotlib import pyplot as plt
+from matplotlib.ticker import MultipleLocator
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import LabelEncoder
@@ -30,7 +31,7 @@ warnings.filterwarnings("ignore")
 logging.set_verbosity_error()
 DEFAULT_FILE = "../Data/articles1.csv"
 DEFAULT_SAMPLES = 500
-DEFAULT_ALGORITHMS = ["rf", "xgb", "mlp", "lr", "ensemble", "distilbert"]
+DEFAULT_ALGORITHMS = "rf, xgb, mlp, lr, ensemble, distilbert"
 DEFAULT_BATCH_SIZE = 16
 
 parser = argparse.ArgumentParser(description='Identification of anonymous authors using textual analysis and machine learning.')
@@ -51,7 +52,7 @@ BATCH_SIZE = args.batch_size
 
 def check_args():
     print("=============================\n"
-          "Checking Args")
+          "Checking Arguments")
     if FILE is None:
         dataset = DEFAULT_FILE
     else:
@@ -63,7 +64,8 @@ def check_args():
         min_samples = SAMPLES
 
     if ALGORITHMS is None:
-        algorithms = DEFAULT_ALGORITHMS
+        algorithms = re.sub('\s+', '', DEFAULT_ALGORITHMS)
+        algorithms.split(',')
     else:
         algorithms = re.sub('\s+', '', ALGORITHMS)
         algorithms.split(',')
@@ -104,7 +106,8 @@ def prepocessing(data, min_samples):
     df['content'] = df['content'].apply(lambda x: re.sub('[^a-zA-Z0-9\s]', '', x))
     df['content'] = df['content'].apply(lambda x: re.sub('\s+', ' ', x))
 
-    print(f"Number of authors: {df['author'].nunique()}")
+    author_count = df['author'].nunique()
+    print(author_count)
 
     samples = df.groupby('author').size()
     largest_sample = df.groupby('author').size().max()
@@ -129,7 +132,7 @@ def prepocessing(data, min_samples):
     tt = et - st
     print("Finished Preprocessing\n"
           f"Took {tt:.3f}s")
-    return x_train, x_test, y_train, y_test
+    return x_train, x_test, y_train, y_test, author_count
 
 
 class CustomDataset(torch.utils.data.Dataset):
@@ -149,10 +152,17 @@ class CustomDataset(torch.utils.data.Dataset):
 metric = load_metric('accuracy')
 
 
-def compute_metrics(eval_pred):
-    predictions, labels = eval_pred
-    predictions = np.argmax(predictions, axis=1)
-    return metric.compute(predictions=predictions, references=labels)
+def compute_metrics(pred):
+    labels = pred.label_ids
+    preds = pred.predictions.argmax(-1)
+    precision, recall, f1, _ = precision_recall_fscore_support(labels, preds, average='weighted')
+    acc = accuracy_score(labels, preds)
+    return {
+        'accuracy': acc,
+        'precision': precision,
+        'recall': recall,
+        'f1': f1
+    }
 
 
 def random_forest(x_train, x_test, y_train, y_test):
@@ -165,11 +175,14 @@ def random_forest(x_train, x_test, y_train, y_test):
     y_pred = rf.predict(x_test)
 
     accuracy = accuracy_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred, average='weighted')
+    precision = precision_score(y_test, y_pred, average='weighted')
+    f1 = f1_score(y_test, y_pred, average='weighted')
     et = time.time()
     tt = et - st
     print("-Finished\n"
           f"Took {tt:.3f}s")
-    return "Random Forest", accuracy
+    return "Random Forest", accuracy, recall, precision, f1
 
 
 def xgboost(x_train, x_test, y_train, y_test):
@@ -181,11 +194,14 @@ def xgboost(x_train, x_test, y_train, y_test):
     y_pred = xg.predict(x_test)
 
     accuracy = accuracy_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred, average='weighted')
+    precision = precision_score(y_test, y_pred, average='weighted')
+    f1 = f1_score(y_test, y_pred, average='weighted')
     et = time.time()
     tt = et - st
     print("-Finished\n"
           f"Took {tt:.3f}s")
-    return "XGBoost", accuracy
+    return "XGBoost", accuracy, recall, precision, f1
 
 
 def multilayer_perceptron(x_train, x_test, y_train, y_test):
@@ -198,11 +214,14 @@ def multilayer_perceptron(x_train, x_test, y_train, y_test):
     y_pred = mlp.predict(x_test)
 
     accuracy = accuracy_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred, average='weighted')
+    precision = precision_score(y_test, y_pred, average='weighted')
+    f1 = f1_score(y_test, y_pred, average='weighted')
     et = time.time()
     tt = et - st
     print("-Finished\n"
           f"Took {tt:.3f}s")
-    return "Multilayer Perceptron", accuracy
+    return "Multilayer Perceptron", accuracy, recall, precision, f1
 
 
 def logistic_regression(x_train, x_test, y_train, y_test):
@@ -214,11 +233,14 @@ def logistic_regression(x_train, x_test, y_train, y_test):
     y_pred = lr.predict(x_test)
 
     accuracy = accuracy_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred, average='weighted')
+    precision = precision_score(y_test, y_pred, average='weighted')
+    f1 = f1_score(y_test, y_pred, average='weighted')
     et = time.time()
     tt = et - st
     print("-Finished\n"
           f"Took {tt:.3f}s")
-    return "Logistic Regression", accuracy
+    return "Logistic Regression", accuracy, recall, precision, f1
 
 
 def ensemble(x_train, x_test, y_train, y_test):
@@ -236,11 +258,14 @@ def ensemble(x_train, x_test, y_train, y_test):
     y_pred = ensemble.predict(x_test)
 
     accuracy = accuracy_score(y_test, y_pred)
+    recall = recall_score(y_test, y_pred, average='weighted')
+    precision = precision_score(y_test, y_pred, average='weighted')
+    f1 = f1_score(y_test, y_pred, average='weighted')
     et = time.time()
     tt = et - st
     print("-Finished\n"
           f"Took {tt:.3f}s")
-    return "Ensemble", accuracy
+    return "Ensemble", accuracy, recall, precision, f1
 
 
 def distilbert(data, min_samples, batch_size):
@@ -281,7 +306,7 @@ def distilbert(data, min_samples, batch_size):
     test_dataset = CustomDataset(test_encodings, y_test)
 
     args = TrainingArguments(
-        output_dir='./results',  # output directory
+        output_dir='./bert-results',  # output directory
         num_train_epochs=3,  # total number of training epochs
         per_device_train_batch_size=batch_size,  # batch size per device during training
         per_device_eval_batch_size=batch_size,  # batch size for evaluation
@@ -301,71 +326,85 @@ def distilbert(data, min_samples, batch_size):
     )
 
     trainer.train()
-    trainer.evaluate(test_dataset)
     pred = trainer.predict(test_dataset)
+
+
     et = time.time()
     tt = et - st
     print("-Finished\n"
           f"Took {tt:.3f}s")
-    return "DistilBERT", pred.metrics['test_accuracy']
+    return "DistilBERT", pred.metrics['test_accuracy'], pred.metrics['test_recall'], pred.metrics['test_precision'], pred.metrics['test_f1']
 
 
-def data_fusion():
-    return 0
-
-
-def save_data(accuracies, min_samples, algorithms):
-    with open(f'results{algorithms}{min_samples}.txt', 'w') as file:
-        file.write(f"{min_samples} min samples\nUsing {algorithms}\n")
+def save_data(accuracies, min_samples, algorithms, author_count):
+    if not os.path.exists("./results"):
+        os.makedirs("./results")
+    with open(f"results/{algorithms.replace(',','-')}{min_samples}.txt", 'w') as file:
+        file.write(f"{min_samples} min samples / {author_count} authors\nUsing {algorithms.split(',')}\n")
         for i in accuracies:
             file.write(f"{i}, {accuracies[i]}\n")
 
 
 def plot(accuracies):
     print("Plotting Graph")
-    algorithms = accuracies.keys()
-    accuracy_values = accuracies.values()
+    keys = list(accuracies.keys())
+    values = np.array(list(accuracies.values()))
 
-    plt.yticks(np.arange(0, 100, 5))
+    x_pos = np.arange(len(keys))
+
+    bar_width = 0.2
+
+    fig, ax = plt.subplots()
+    for i in range(len(values[0])):
+        ax.bar(x_pos + i * bar_width, values[:, i], width=bar_width,
+               label=['Accuracy', 'Recall', 'Precision', 'F1-Score'][i])
+
+    ax.set_xticks(x_pos + 1.5 * bar_width)
+    ax.set_xticklabels(keys)
+
+    ax.set_xlabel('Algorithms')
+    ax.set_ylabel('Scores')
+    ax.legend()
+
+    min_value = min([min(values[:, i]) for i in range(len(values[0]))])
+    rounded_min_value = min_value - (min_value % 5)
+    ax.set_ylim(bottom=rounded_min_value, top=100)
+    ax.yaxis.set_major_locator(MultipleLocator(1))
     plt.grid(axis='y', linestyle='--')
-    plt.bar(algorithms, accuracy_values)
-    plt.title('Accuracy Comparison')
-    plt.xlabel('Algorithm')
-    plt.ylabel('Accuracy %')
 
     plt.show()
 
 
 def main():
     data, min_samples, algorithms, batch_size = check_args()
-    x_train, x_test, y_train, y_test = prepocessing(data, min_samples)
+    x_train, x_test, y_train, y_test, author_count = prepocessing(data, min_samples)
     accuracies = {}
 
     if "rf" in algorithms:
-        x, y = random_forest(x_train, x_test, y_train, y_test)
-        accuracies[x] = y * 100
+        x, acc, rec, prec, f1 = random_forest(x_train, x_test, y_train, y_test)
+        accuracies[x] = [acc * 100, rec * 100, prec * 100, f1 * 100]
 
     if "xgb" in algorithms:
-        x, y = xgboost(x_train, x_test, y_train, y_test)
-        accuracies[x] = y * 100
+        x, acc, rec, prec, f1 = xgboost(x_train, x_test, y_train, y_test)
+        accuracies[x] = [acc * 100, rec * 100, prec * 100, f1 * 100]
 
     if "mlp" in algorithms:
-        x, y = multilayer_perceptron(x_train, x_test, y_train, y_test)
-        accuracies[x] = y * 100
+        x, acc, rec, prec, f1 = multilayer_perceptron(x_train, x_test, y_train, y_test)
+        accuracies[x] = [acc * 100, rec * 100, prec * 100, f1 * 100]
 
     if "lr" in algorithms:
-        x, y = logistic_regression(x_train, x_test, y_train, y_test)
-        accuracies[x] = y * 100
+        x, acc, rec, prec, f1 = logistic_regression(x_train, x_test, y_train, y_test)
+        accuracies[x] = [acc * 100, rec * 100, prec * 100, f1 * 100]
 
     if "ensemble" in algorithms:
-        x, y = ensemble(x_train, x_test, y_train, y_test)
-        accuracies[x] = y * 100
+        x, acc, rec, prec, f1 = ensemble(x_train, x_test, y_train, y_test)
+        accuracies[x] = [acc * 100, rec * 100, prec * 100, f1 * 100]
 
     if "distilbert" in algorithms:
-        x, y = distilbert(data, min_samples, batch_size)
-        accuracies[x] = y * 100
+        x, acc, rec, prec, f1 = distilbert(data, min_samples, batch_size)
+        accuracies[x] = [acc * 100, rec * 100, prec * 100, f1 * 100]
 
-    save_data(accuracies, min_samples, algorithms)
+    save_data(accuracies, min_samples, algorithms, author_count)
     plot(accuracies)
 
 

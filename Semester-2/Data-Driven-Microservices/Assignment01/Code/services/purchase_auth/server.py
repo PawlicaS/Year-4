@@ -41,6 +41,7 @@ class Purchase(purchase_auth_pb2_grpc.Purchase):
             return purchase_auth_pb2.PurchaseResponse(message="Purchase successful.")
 
         else:
+            print("Purchase failed.")
             return purchase_auth_pb2.PurchaseResponse(
                 message="Payment authorisation failed, please try again later.")
 

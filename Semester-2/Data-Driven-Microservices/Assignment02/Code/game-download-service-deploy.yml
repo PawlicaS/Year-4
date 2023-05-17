@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: game-download-service
+spec:
+  replicas: 15
+  selector:
+    matchLabels:
+      app: game-download-service
+  minReadySeconds: 6
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 3
+  template:
+    metadata:
+      labels:
+        app: game-download-service
+    spec:
+      containers:
+      - name: game-download-service
+        image: szymonpawlica22/game-download:latest
+        ports:
+        - containerPort: 50053
